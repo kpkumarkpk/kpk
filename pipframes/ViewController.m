@@ -69,6 +69,8 @@ GADInterstitial *interstitial;
     
     [super viewDidLoad];
     
+    NSLog(@"merging");
+    
     if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)])
     {
         [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationSlide];
