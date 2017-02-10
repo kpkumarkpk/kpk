@@ -214,7 +214,7 @@
 #define admobmediationid_iphone @"ca-app-pub-8572140050384873/6869717544"
 #define admobmediationid_ipad @"ca-app-pub-8572140050384873/6869717544"
 #define admobpublishedid_ipad @"ca-app-pub-8572140050384873/6869717544"
-#define fullscreen_admob_id   ((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ?@"ca-app-pub-8572140050384873/8346450748" : @"ca-app-pub-8572140050384873/8346450748")
+#define fullscreen_admob_id   ((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ?@"ca-app-pub-8572140050384873/1919845940" : @"ca-app-pub-8572140050384873/1919845940")
 
 
 /* first screen  */
@@ -258,7 +258,7 @@
 #define admobmediationid_iphone @"ca-app-pub-8572140050384873/6186132747"
 #define admobmediationid_ipad @"ca-app-pub-8572140050384873/6186132747"
 #define admobpublishedid_ipad @"ca-app-pub-8572140050384873/6186132747"
-#define fullscreen_admob_id   ((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ?@"ca-app-pub-8572140050384873/7662865949" : @"ca-app-pub-8572140050384873/7662865949")
+#define fullscreen_admob_id   ((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ?@"ca-app-pub-8572140050384873/1919845940" : @"ca-app-pub-8572140050384873/1919845940")
 
 
 /* first screen  */
@@ -304,8 +304,9 @@
 #define admobmediationid_iphone @"ca-app-pub-8572140050384873/2299917146"
 #define admobmediationid_ipad @"ca-app-pub-8572140050384873/2299917146"
 #define admobpublishedid_ipad @"ca-app-pub-8572140050384873/2299917146"
-//#define fullscreen_admob_id   ((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ?@"ca-app-pub-8572140050384873/3776650340" : @"ca-app-pub-8572140050384873/3776650340")
-#define fullscreen_admob_id @"ca-app-pub-8572140050384873/5322703949"
+
+#define fullscreen_admob_id @"ca-app-pub-8572140050384873/1919845940"
+
 /* first screen  */
 #define startbuttonImage  ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?@"start_ipad.png":@"start.png")
 #define freebuttonImage  ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?@"free_vo_ipad.png":@"free_vo.png")
@@ -330,9 +331,9 @@
 #define youtubeShareImage  ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?@"youtube_share_ipad.png":@"youtube_share.png")
 
 
-#define ImageView_Hieight ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?700.0:280.0)
+#define ImageView_Hieight ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?700.0:210.0)
 
-
+#define ImageView_Hieightview ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?800.0:210.0)
 
 #endif
 #endif

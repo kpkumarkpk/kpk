@@ -6,19 +6,26 @@
 //  Copyright © 2016 OUTTHINKING PVT LTD. All rights reserved.
 //
 
+
+
 #import "ShareViewController.h"
-#import "OT_TabBar.h"
+
 #import "Config.h"
 #import <Accounts/Accounts.h>
 #import <Social/Social.h>
-#import "FourthViewController.h"
 
+#import "PreviewViewController.h"
 
-
+#define topStrip ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?60.0:60.0)
+#define nativeAdstrip ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?300.0:250.0)
+#define moreAppStrip ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?300.0:250.0)
+#define topStrip ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?60.0:60.0)
+#define nativeAdstrip ((UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())?300.0:250.0)
 #define adCoverMediaView_height  ((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 340  : [[UIScreen mainScreen]bounds].size.width/3)
 #define FBMediaView_top ((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 100  : 100)
 
-
+#define screenWidth    ([[UIScreen mainScreen]bounds].size.width)
+#define screenHeight   ([[UIScreen mainScreen]bounds].size.height)
 @interface ShareViewController ()
 @property(strong, nonatomic) NSString *feedbackMsg;
 @property (strong,  nonatomic) UIDocumentInteractionController *doccontroller;
@@ -28,32 +35,62 @@
 
 @implementation ShareViewController
 
-@synthesize shareview,customTab,finalscreenshot,doccontroller;
-
+@synthesize shareview,finalscreenshot,doccontroller,finalscreen;
 
 - (void)viewDidLoad
 {
+    NSLog(@"working");
+    
     
     [super viewDidLoad];
     
-    // Do any additional setup after loading the view.
-    
+
     self.navigationItem.title=@"Share";
     
     [self.view setContentMode:UIViewContentModeScaleAspectFit];
     
+    [self.view setBackgroundColor:[UIColor colorWithRed:0.227 green:0.227 blue:0.227 alpha:1]];
     
-    if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
-        // iOS 7
-        [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationSlide];
-    } else {
-        // iOS 6
-        [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationSlide];
+    
+    
+    CGSize itemSize;
+    
+    CGRect imageRect;
+    
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
+    {
+        itemSize = CGSizeMake(320,600);
+        imageRect = CGRectMake(0, 0, 320,600);
+        UIGraphicsBeginImageContext(itemSize);
+        [finalscreenshot drawInRect:imageRect];
+    }
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+    {
+        itemSize = CGSizeMake(320,550);
+        imageRect = CGRectMake(0, 0, 320,550);
+        UIGraphicsBeginImageContext(itemSize);
+        [finalscreenshot drawInRect:imageRect];
+    }
+    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+    {
+        itemSize = CGSizeMake(screenWidth,screenHeight);
+        imageRect = CGRectMake(0, 0, screenWidth+1070,screenHeight+730);
+        UIGraphicsBeginImageContext(itemSize);
+        [finalscreenshot drawInRect:imageRect];
     }
     
+    finalscreenshot = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
     [self allocateMenuBarSharePage];
+    
+    
+    [super viewDidLoad];
+    
     [self showNativeAd];
-   [self addShareAdsView];
+    
+    [self addShareAdsView];
     
     
 }
@@ -103,123 +140,121 @@
 -(void)allocateMenuBarSharePage
 {
     
+    UIView *_topView1 = [[UIView alloc]initWithFrame:CGRectMake(0,0,fullScreen.size.width ,downstrip_height)];
+    [_topView1 setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"downstrip_img.jpg"]]];
+    [self.view addSubview:_topView1];
     
-    if (customTab==nil)
+    
+    UIButton*backButton,*gallerybutton,*facebook,*instagram,*gmail;
+    
+    backButton =[[UIButton alloc]initWithFrame:CGRectMake(0, 0, 38, 38)];
+    gallerybutton =[[UIButton alloc]initWithFrame:CGRectMake(0, 0, 38, 38)];
+    facebook =[[UIButton alloc]initWithFrame:CGRectMake(0, 0, 38, 38)];
+    instagram =[[UIButton alloc]initWithFrame:CGRectMake(0, 0, 38, 38)];
+    gmail =[[UIButton alloc]initWithFrame:CGRectMake(0, 0, 38, 38)];
+    
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
     {
-        [customTab removeFromSuperview];
-        customTab=nil;
+        
+        backButton.center=CGPointMake(self.view.frame.size.width*0.13, downstrip_height*0.5);
+        
+        gallerybutton.center=CGPointMake(self.view.frame.size.width*0.32, downstrip_height*0.5);
+        
+        facebook.center=CGPointMake(self.view.frame.size.width*0.50, downstrip_height*0.5);
+        
+        instagram.center=CGPointMake(self.view.frame.size.width*0.69, downstrip_height*0.5);
+        
+        gmail.center=CGPointMake(self.view.frame.size.width*0.88, downstrip_height*0.5);
+        
+    }
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+    {
+        backButton.center=CGPointMake(self.view.frame.size.width*0.13, downstrip_height*0.5);
+        
+        gallerybutton.center=CGPointMake(self.view.frame.size.width*0.32, downstrip_height*0.5);
+        
+        facebook.center=CGPointMake(self.view.frame.size.width*0.50, downstrip_height*0.5);
+        
+        instagram.center=CGPointMake(self.view.frame.size.width*0.69, downstrip_height*0.5);
+        
+        gmail.center=CGPointMake(self.view.frame.size.width*0.88, downstrip_height*0.5);
     }
     
-    
-    ///////////////////////
-    
-    customTab = [[OT_TabBar alloc]initWithFrame:CGRectMake(0,0,fullScreen.size.width ,Share_Strip)];
-    //    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-    //    {
-    //        custemTab . frame = CGRectMake(0, _fullscreen.size.height-44, _fullscreen.size.width, 44);
-    //    }
-    customTab.delegate = self;
-    customTab.backgroundColor = [UIColor colorWithRed:0.149 green:0.149 blue:0.149 alpha:1];
-    customTab.showOverlayOnSelection = NO;
-    
-    
-    
-    OT_TabBarItem *back = [[OT_TabBarItem alloc]initWithImage:[UIImage imageNamed:@"BACK"]
-                                                selectedImage:[UIImage imageNamed:@"BACK-1"]
-                                                          tag:0];
-    
-    OT_TabBarItem *gallery = [[OT_TabBarItem alloc]initWithImage:[UIImage imageNamed:@"GALLERY"]
-                                                   selectedImage:[UIImage imageNamed:@"GALLERY-1"]
-                                                             tag:1];
-    
-    
-    
-    
-    OT_TabBarItem *facebook = [[OT_TabBarItem alloc]initWithImage:[UIImage imageNamed:@"FACEBOOK"]
-                                                    selectedImage:[UIImage imageNamed:@"FACE-BOOK-1"]
-                                                              tag:2];
-    
-    
-    OT_TabBarItem *instagram = [[OT_TabBarItem alloc]initWithImage:[UIImage imageNamed:@"INSTAGRAM"]
-                                                     selectedImage:[UIImage imageNamed:@"INSTAGRAM-1"]
-                                                               tag:3];
-    
-    OT_TabBarItem *gmail = [[OT_TabBarItem alloc]initWithImage:[UIImage imageNamed:@"MAIL"]
-                                                 selectedImage:[UIImage imageNamed:@"MAIL-1"]
-                                                           tag:4];
-    
-    
-    customTab.itemTitleArray = [NSArray arrayWithObjects:@"back",@"gallery",@"facebook",@"instagram",@"gmail", nil];
-    customTab.items = [NSArray arrayWithObjects:back,gallery,facebook,instagram,gmail, nil];
-    
-    [self.view addSubview:customTab];
-    
-    
-}
--(void)otTabBar:(OT_TabBar*)tbar didSelectItem:(OT_TabBarItem*)tItem
-{
-    switch (tItem.tag)
+    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
     {
-        case 0:
-        {
-            
-            [self backhere];
-            
-            break;
-        }
-        case 1:
-        {
-            
-            
-            [self galleryhere];
-            
-            break;
-        }
-        case 2:
-        {
-            
-            [self facebookhere];
-            
-            break;
-        }
-        case 3:
-        {
-            
-
-            [self instagramhere];
-            
-            break;
-        }
-        case 4:
-        {
-            
-            [self mailhere];
-            
-            
-            break;
-        }
-            
-            
-        default:
-        {
-            break;
-        }
+        backButton.center=CGPointMake(self.view.frame.size.width*0.13, downstrip_height*0.5);
+        
+        gallerybutton.center=CGPointMake(self.view.frame.size.width*0.32, downstrip_height*0.5);
+        
+        facebook.center=CGPointMake(self.view.frame.size.width*0.50, downstrip_height*0.5);
+        
+        instagram.center=CGPointMake(self.view.frame.size.width*0.69, downstrip_height*0.5);
+        
+        gmail.center=CGPointMake(self.view.frame.size.width*0.88, downstrip_height*0.5);
+        
     }
-}
+    
+    // --------- Back Button ----------------//
+    
+    
+    [backButton setBackgroundImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"back_active"] forState:UIControlStateHighlighted];
+    backButton .contentMode = UIViewContentModeScaleAspectFit;
+    [backButton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [backButton addTarget:self action:@selector(backhere) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:backButton];
+    
+    
+    [gallerybutton setBackgroundImage:[UIImage imageNamed:@"save"] forState:UIControlStateNormal];
+    [gallerybutton setBackgroundImage:[UIImage imageNamed:@"save_act"] forState:UIControlStateHighlighted];
+    gallerybutton .contentMode = UIViewContentModeScaleAspectFit;
+    [gallerybutton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [gallerybutton addTarget:self action:@selector(galleryhere) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:gallerybutton];
+    
 
+    
+    
+    [facebook setBackgroundImage:[UIImage imageNamed:@"fb"] forState:UIControlStateNormal];
+    [facebook setBackgroundImage:[UIImage imageNamed:@"fb_act"] forState:UIControlStateHighlighted];
+    facebook .contentMode = UIViewContentModeScaleAspectFit;
+    [facebook setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [facebook addTarget:self action:@selector(facebookhere) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:facebook];
+    
+    
+    
+    [instagram setBackgroundImage:[UIImage imageNamed:@"instagram"] forState:UIControlStateNormal];
+    [instagram setBackgroundImage:[UIImage imageNamed:@"instagram_act"] forState:UIControlStateHighlighted];
+    instagram .contentMode = UIViewContentModeScaleAspectFit;
+    [instagram setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [instagram addTarget:self action:@selector(sharingInstagram) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:instagram];
+    
+
+    
+    
+    [gmail setBackgroundImage:[UIImage imageNamed:@"mail"] forState:UIControlStateNormal];
+    [gmail setBackgroundImage:[UIImage imageNamed:@"mail_act"] forState:UIControlStateHighlighted];
+    gmail .contentMode = UIViewContentModeScaleAspectFit;
+    [gmail setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [gmail addTarget:self action:@selector(mailhere) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:gmail];
+    
+
+}
 
 -(void)backhere
 {
     
     [self.navigationController popViewControllerAnimated:YES];
     
-    
-    
 }
 -(void)facebookhere
 {
     
-    NSLog(@"facebookshare");
+     NSLog(@"facebookshare");
+    
     
     if([SLComposeViewController instanceMethodForSelector:@selector(isAvailableForServiceType)] != nil)
     {
@@ -251,7 +286,7 @@
             };
             controller.completionHandler =myBlock;
             
-            [controller setInitialText:@"Wow! I love this Photo Blending App called  “PhotoBlendly”.  Awesome app to blend 2 Photos into 1 Photo. You can download this free app at"];
+            [controller setInitialText:@"Wow! I love this Pic Projector App called  “PicProjector”.  Awesome app to show projector animation on photo. You can download this free app at"];
             [controller addImage: finalImage];
             
             
@@ -276,55 +311,91 @@
     
 }
 
--(void)instagramhere
+//-(void)sharingToInstagram
+//
+//{
+//    
+//    
+//    NSLog(@"instagramshare");
+//    
+//    UIImage *finalImage = finalscreenshot;
+//    
+//    NSString *pathToSave = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/captions1.ig"];
+//    
+//    [UIImageJPEGRepresentation(finalImage, 1.0) writeToFile:pathToSave atomically:YES];
+//    
+//    NSURL *url = [NSURL URLWithString:@"instagram://InstaZCollageFx"];
+//    if([[UIApplication sharedApplication]canOpenURL:url])
+//    {
+//        doccontroller
+//        = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:pathToSave]];
+//        doccontroller.UTI = @"com.instagram.photo";
+//        doccontroller.delegate = self;
+//        
+//        [doccontroller setAnnotation:@{@"InstagramCaption" : @"Wow!! This Free “Selfie camera” App (on IG @Selfie Camera) helped me to Filtering Camera. ."}];
+//        CGRect rect =CGRectMake(0, 0, screenWidth+1070,screenHeight+730);
+//        //CGRectMake(0, 150,300, 300);
+//        
+//        [doccontroller presentOpenInMenuFromRect:rect inView:self.view animated:YES];
+//    }
+//    else {
+//        UIAlertView *alertView = [[UIAlertView alloc]
+//                                  initWithTitle:@"Sorry"
+//                                  message:@"Instagram not installed in this device!\nTo share image please install instagram."
+//                                  delegate:nil
+//                                  cancelButtonTitle:@"OK"
+//                                  otherButtonTitles:nil];
+//        [alertView show];
+//        
+//    }
+//    
+//    return;
+//    
+//    
+//}
+//
+//
+
+-(void)sharingInstagram
 {
     
-    NSLog(@"instagramshare");
+        NSLog(@"instagramshare");
     
-    UIImage *finalImage = finalscreenshot;
+        UIImage *finalImage = finalscreenshot;
     
-    NSString *pathToSave = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/captions1.ig"];
+        NSString *pathToSave = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/captions1.ig"];
     
-    [UIImageJPEGRepresentation(finalImage, 1.0) writeToFile:pathToSave atomically:YES];
+        [UIImageJPEGRepresentation(finalImage, 1.0) writeToFile:pathToSave atomically:YES];
     
-    NSURL *instagramUrl = [NSURL URLWithString:@"instagram://InstaCollageFx"];
+        NSURL *url = [NSURL URLWithString:@"instagram://InstaZCollageFx"];
+        if([[UIApplication sharedApplication]canOpenURL:url])
+        {
+            doccontroller
+            = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:pathToSave]];
+            doccontroller.UTI = @"com.instagram.photo";
+            doccontroller.delegate = self;
     
-    if([[UIApplication sharedApplication]canOpenURL:instagramUrl])
-    {
-        doccontroller
-        = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:pathToSave]];
+            [doccontroller setAnnotation:@{@"InstagramCaption" : @"Wow!! This Free “Pic Projector” App (on IG @Pic Project) helped me to show projector effect on image. ."}];
+            CGRect rect =CGRectMake(0, 150,300, 300);
+          
+    
+            [doccontroller presentOpenInMenuFromRect:rect inView:self.view animated:YES];
+        }
+        else {
+            UIAlertView *alertView = [[UIAlertView alloc]
+                                      initWithTitle:@"Sorry"
+                                      message:@"Instagram not installed in this device!\nTo share image please install instagram."
+                                      delegate:nil
+                                      cancelButtonTitle:@"OK"
+                                      otherButtonTitles:nil];
+            [alertView show];
+            
+        }
         
-        doccontroller.UTI = @"com.instagram.photo";
-        
-        doccontroller.delegate = self;
-        
-        
-        [doccontroller setAnnotation:@{@"InstagramCaption" : @"Wow!! This Free “Pip Frames” App  helped me to show picture inside a picture. To download this app check their Instagram profile @Pip Frames."}];
- 
-      CGRect rect=CGRectMake(100, 30, 100, 100);
+        return;
 
-
- 
-        [doccontroller presentOpenInMenuFromRect:rect inView:self.view animated:YES];
-        
-    }
-    else
-    {
-        UIAlertView *alertView = [[UIAlertView alloc]
-                                  initWithTitle:@"Sorry"
-                                  message:@"Instagram not installed in this device!\nTo share image please install instagram."
-                                  delegate:nil
-                                  cancelButtonTitle:@"OK"
-                                  otherButtonTitles:nil];
-        [alertView show];
-        
-    }
-    
-    return;
-    
     
 }
-
 -(void)mailhere
 {
     
@@ -358,8 +429,6 @@
                           otherButtonTitles:nil];
     [saved show];
     
-    
-    
 }
 
 - (void)displayMailComposerSheet
@@ -367,7 +436,7 @@
     MFMailComposeViewController *picker = [[MFMailComposeViewController alloc] init];
     picker.mailComposeDelegate = self;
     
-    [picker setSubject:@"Try this Awesome Pip Frames App"];
+    [picker setSubject:@"Try this Awesome Pic Projector App"];
     
     UIImage *finalImage = finalscreenshot;
     
@@ -375,7 +444,7 @@
     [picker addAttachmentData:myData mimeType:@"image/png" fileName:@"coolImage.png"];
     
     // Fill out the email body text
-    NSString *emailBody = @"Hi, \n\r \n\r I just came across this awesome Free Pip Frames  App called “Pip Frames ” from Out Thinking Pvt Ltd. A very nice and FREE app to picture inside a picture easily. I recommend you to try this app once on your device as well. \n\r \n\r Free Pip Frames App Download Link: https://itunes.apple.com/app/id903353202 \n\r \n\r \n\r Regards, \n\r App lover";
+    NSString *emailBody = @"Hi, \n\r \n\r I just came across this awesome Free Pic projector App called “Pic Projector ” from Out Thinking Pvt Ltd. A very nice and FREE app to show projector animation on image easily. I recommend you to try this app once on your device as well. \n\r \n\r Free pic Projector App Download Link: https://itunes.apple.com/app/id1136130593 \n\r \n\r \n\r Regards, \n\r App lover";
     
     [picker setMessageBody:emailBody isHTML:NO];
     
@@ -386,7 +455,7 @@
 - (void)mailComposeController:(MFMailComposeViewController*)controller
           didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error
 {
-    // Notifies users about errors associated with the interface
+
     switch (result)
     {
         case MFMailComposeResultCancelled:
@@ -422,9 +491,10 @@
                                              otherButtonTitles:nil];
     [theAlert show];
 }
+
 - (void)showNativeAd
 {
-    FBNativeAd *nativeAd = [[FBNativeAd alloc] initWithPlacementID:@"1309171202443004_1309174115776046"];
+    FBNativeAd *nativeAd = [[FBNativeAd alloc] initWithPlacementID:@"1718429068407302_1718429608407248"];
     nativeAd.delegate = self;
     [nativeAd loadAd];
 }
@@ -432,87 +502,18 @@
 - (void)nativeAdDidLoad:(FBNativeAd *)nativeAd
 {
     self.view.backgroundColor = [UIColor whiteColor];
-    
-    
-    UIView *nativeAdView  = [[UIView alloc]init];
-    
-    FBMediaView *adCoverMediaView = [[FBMediaView alloc]init];
-    
-    UILabel *titleLabel = [[UILabel alloc]init];
-    
-    UILabel *desc = [[UILabel alloc]init];
-    
-    UIButton *actionBut = [UIButton buttonWithType:UIButtonTypeCustom];
-
-    
-    
-    
-    
-    
-    
-    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
-    {
-        
-        nativeAdView.frame=CGRectMake(0.0, Share_Strip+2, [[UIScreen mainScreen]bounds].size.width, [[UIScreen mainScreen]bounds].size.height/2);
-        
-        adCoverMediaView.frame=CGRectMake(10.0, Share_Strip/2, [[UIScreen mainScreen]bounds].size.width-20, 2*adCoverMediaView_height);
-        
-        titleLabel.frame=CGRectMake(65.0, 1.5*adCoverMediaView_height+FBMediaView_top+5, [[UIScreen mainScreen]bounds].size.width-155, 15);
-        
-        desc.frame=CGRectMake(65.0, (1.5*adCoverMediaView_height+FBMediaView_top)+20, [[UIScreen mainScreen]bounds].size.width-155, 20);
-        
-        actionBut.frame = CGRectMake([[UIScreen mainScreen]bounds].size.width-80, (1.5*adCoverMediaView_height+FBMediaView_top)+10, 75, 25);
-        
-        
-        
-    }
-    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
-    {
-        
-        nativeAdView.frame=CGRectMake(0.0, Share_Strip+2, [[UIScreen mainScreen]bounds].size.width, [[UIScreen mainScreen]bounds].size.height/2-10);
-        
-        adCoverMediaView.frame=CGRectMake(10.0, (Share_Strip+8), [[UIScreen mainScreen]bounds].size.width-20, adCoverMediaView_height+10);
-        
-        titleLabel.frame=CGRectMake(65.0, adCoverMediaView_height+FBMediaView_top+5, [[UIScreen mainScreen]bounds].size.width-155, 15);
-        
-        desc.frame=CGRectMake(65.0, (adCoverMediaView_height+FBMediaView_top)+20, [[UIScreen mainScreen]bounds].size.width-155, 20);
-        
-        actionBut.frame = CGRectMake([[UIScreen mainScreen]bounds].size.width-80, (adCoverMediaView_height+FBMediaView_top)+10, 75, 25);
-        
-        
-        
-    }
-    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
-    {
-        
-        
-        nativeAdView.frame=CGRectMake(0.0, Share_Strip+2, [[UIScreen mainScreen]bounds].size.width, [[UIScreen mainScreen]bounds].size.height/2);
-        
-        adCoverMediaView.frame=CGRectMake(10.0, (Share_Strip/2), [[UIScreen mainScreen]bounds].size.width-20, 1.7*adCoverMediaView_height);
-        
-        titleLabel.frame=CGRectMake(65.0, adCoverMediaView_height+FBMediaView_top+5, [[UIScreen mainScreen]bounds].size.width-155, 15);
-        
-        desc.frame=CGRectMake(65.0, (adCoverMediaView_height+FBMediaView_top)+25, [[UIScreen mainScreen]bounds].size.width-155, 20);
-        
-        actionBut.frame = CGRectMake([[UIScreen mainScreen]bounds].size.width-80, (adCoverMediaView_height+FBMediaView_top)+15, 75, 25);
-        
-    }
-
-    
-       
-    nativeAdView.backgroundColor = [UIColor clearColor];
-    
+    UIView *nativeAdView  = [[UIView alloc]initWithFrame:CGRectMake(0.0, Share_Strip+2, [[UIScreen mainScreen]bounds].size.width, [[UIScreen mainScreen]bounds].size.height/2-10)];
+    nativeAdView.backgroundColor = [UIColor whiteColor];
     
     UILabel *Sponsored = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 5, [[UIScreen mainScreen]bounds].size.width, 10)];
-    
     Sponsored.text = @"Sponsored";
     Sponsored.textColor = [UIColor grayColor];
     [Sponsored setFont:[UIFont fontWithName:@"HelveticaNeue" size:10]];
     [nativeAdView addSubview:Sponsored];
     
-    // Allocate a FBMediaView to contain the cover image or native video asset
     
-    [adCoverMediaView setBackgroundColor:[UIColor clearColor]];
+    FBMediaView *adCoverMediaView = [[FBMediaView alloc] initWithFrame:CGRectMake(10.0, (Share_Strip+8), [[UIScreen mainScreen]bounds].size.width-20, adCoverMediaView_height)];
+    [adCoverMediaView setBackgroundColor:[UIColor blueColor]];
     
     [adCoverMediaView setNativeAd:nativeAd];
     [nativeAdView addSubview:adCoverMediaView];
@@ -521,55 +522,26 @@
     [nativeAd.icon loadImageAsyncWithBlock:^(UIImage *image)
      {
          UIImageView *IconImageView = [[UIImageView alloc] initWithImage: image];
-         
-         if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
-         {
-            IconImageView . frame = CGRectMake(8.0, 1.5*adCoverMediaView_height+FBMediaView_top, 50, 50);
-             
-         }
-         else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
-         {
-             
-             IconImageView . frame = CGRectMake(8.0, adCoverMediaView_height+FBMediaView_top, 50, 50);
-
-         }
-        else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
-         {
-             
-             IconImageView . frame = CGRectMake(8.0, adCoverMediaView_height+FBMediaView_top+5, 50, 50);
-             
-
-           
-             
-         }
-         
-         
-         
-         
-         
-         
-         
+         IconImageView . frame = CGRectMake(8.0, adCoverMediaView_height+FBMediaView_top, 50, 50);
          [nativeAdView addSubview:IconImageView];
      }];
     
     //title
-   
+    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(65.0, adCoverMediaView_height+FBMediaView_top+5, [[UIScreen mainScreen]bounds].size.width-155, 15)];
     titleLabel.text = nativeAd.title;
     [titleLabel setFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:14]];
     [nativeAdView addSubview:titleLabel];
     
     //Descrption
-    
-    
+    UILabel *desc = [[UILabel alloc] initWithFrame:CGRectMake(65.0, (adCoverMediaView_height+FBMediaView_top)+20, [[UIScreen mainScreen]bounds].size.width-155, 20)];
     desc.text = nativeAd.body;
     [desc setFont:[UIFont systemFontOfSize:12]];
     desc.numberOfLines = 0;
     [nativeAdView addSubview:desc];
     
     //CallToAction
-    
-    
-    
+    UIButton *actionBut = [UIButton buttonWithType:UIButtonTypeCustom];
+    actionBut.frame = CGRectMake([[UIScreen mainScreen]bounds].size.width-80, (adCoverMediaView_height+FBMediaView_top)+10, 75, 25);
     actionBut.backgroundColor = [UIColor colorWithRed:0.043 green:0.71 blue:1 alpha:1];
     [actionBut setTitle:nativeAd.callToAction forState:UIControlStateNormal];
     actionBut.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:11];
@@ -603,131 +575,79 @@
 -(void)addShareAdsView
 {
     float adHeightPercentage = 0.50;
-  //  float height_Val = 100;
-    
+    float height_Val = 100;
+
     CGRect webFrame;
-    
-    
+
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
     {
         adHeightPercentage = 0.60;
-        
+
         webFrame = CGRectMake(0,
                               (fullScreen.size.height- (fullScreen.size.width * adHeightPercentage-70)),
                               fullScreen.size.width,
                               fullScreen.size.height- (fullScreen.size.width * adHeightPercentage));
-        
     }
-    
+
     else
     {
         if (fullScreen.size.height > 600)
         {
             adHeightPercentage = 0.70;
-            
-          //  height_Val = 65;
-            
+            height_Val = 65;
             NSLog(@"Running in 600");
         }
-        
-        
         webFrame = CGRectMake(0,
                               (fullScreen.size.height- (fullScreen.size.width * adHeightPercentage)-70),
                               fullScreen.size.width,
                               fullScreen.size.height- (fullScreen.size.width * adHeightPercentage));
-        
     }
-    
+
     UIWebView   *webViewForAd = [[UIWebView alloc] init];
     webViewForAd . tag = webViewTag;
-    
-    
-    
-    
-   /* if (UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())
+    if (UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())
     {
-        
-        
-        
-        webViewForAd . frame = CGRectMake(0, adHeightPercentage + Share_Strip +410 , fullScreen.size.width, fullScreen.size.height - (adHeightPercentage + 2 * Share_Strip+330));
-        
-        
-        
+
+        webViewForAd . frame = CGRectMake(0, self.view.frame.size.height*0.55, fullScreen.size.width, moreAppStrip+160);
+
         NSLog(@"Running ipad");
-        
     }
-    
+
     else
     {
-        
+
         if (fullScreen.size.height > 600)
         {
             NSLog(@"Running > 600");
-            
-            
-            
-            webViewForAd . frame = CGRectMake(0, adCoverMediaView_height + Share_Strip +300, fullScreen.size.width, fullScreen.size.height - (adCoverMediaView_height + 2 * Share_Strip+250));
-            
+
+            webViewForAd . frame = CGRectMake(0, self.view.frame.size.height*0.55, fullScreen.size.width, moreAppStrip+90);
         }
-        
-        
         else if (fullScreen.size.height > 480.0)
         {
-            
-            webViewForAd . frame = CGRectMake(0, adCoverMediaView_height + Share_Strip +170, fullScreen.size.width, fullScreen.size.height - (adCoverMediaView_height + 2 * Share_Strip+110));
-            
-            
+            webViewForAd . frame = CGRectMake(0, self.view.frame.size.height*0.55, fullScreen.size.width, moreAppStrip+90);
+
             NSLog(@"Running > 480");
         }
-        
-        
+
         else
         {
-            
-            webViewForAd . frame = CGRectMake(0, adCoverMediaView_height + Share_Strip +380, fullScreen.size.width, fullScreen.size.height - (adCoverMediaView_height + 2 * Share_Strip+250));
-            
+            webViewForAd . frame = CGRectMake(0, self.view.frame.size.height*0.60, fullScreen.size.width, moreAppStrip);
         }
-        
-    }*/
-    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
-    {
-        
-         webViewForAd . frame = CGRectMake(0, adCoverMediaView_height + Share_Strip+230 , fullScreen.size.width, fullScreen.size.height - (adCoverMediaView_height + Share_Strip+230));
-        
-        
-    }
-    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
-    {
-        
-       webViewForAd . frame = CGRectMake(0, adCoverMediaView_height + Share_Strip +160, fullScreen.size.width, fullScreen.size.height - (adCoverMediaView_height+Share_Strip+150 ));
-       
-        
-        
-        
-    }
-    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
-    {
-        
-         webViewForAd . frame = CGRectMake(0, adCoverMediaView_height + Share_Strip +160, fullScreen.size.width, fullScreen.size.height - (adCoverMediaView_height + 2 * Share_Strip+110));
-        
+
     }
 
-    
-    
-    
     NSLog(@"%f\t%f\t%f",(fullScreen.size.height- (fullScreen.size.width * adHeightPercentage)),
           fullScreen.size.width,
           fullScreen.size.width * adHeightPercentage);
-    
+
     webViewForAd . backgroundColor = [UIColor clearColor];
     webViewForAd . delegate = self;
     [self.view addSubview:webViewForAd];
-    
+
     webViewForAd . hidden = YES;
     webViewForAd . scalesPageToFit = YES;
     [webViewForAd loadRequest:[self getTheUrlRequestForAd]];
-    
-    
+
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
@@ -743,14 +663,12 @@
 
 -(NSURLRequest *)getTheUrlRequestForAd
 {
-    
-    
+
     NSString *urlString = [NSString stringWithFormat:@"http://applyads.com/share_ads.php?id=940386298&cat=photo"];
     NSURL *adUrl = [NSURL URLWithString:urlString];
     NSURLRequest *requestObj = [NSURLRequest requestWithURL:adUrl];
     return requestObj;
-    
-    
+
 }
 - (void)sharer:(id<FBSDKSharing>)sharer didCompleteWithResults:(NSDictionary *)results
 {
@@ -760,7 +678,7 @@
 - (void)sharer:(id<FBSDKSharing>)sharer didFailWithError:(NSError *)error
 {
     NSLog(@"sharing error:%@", error);
-    
+
 }
 
 - (void)sharerDidCancel:(id<FBSDKSharing>)sharer
@@ -768,48 +686,9 @@
     NSLog(@"share cancelled");
 }
 
-
-
-
-
-
-
-#pragma mark - Orientation
-
-/*- (FBInterfaceOrientationMask)supportedInterfaceOrientations
- {
- return UIInterfaceOrientationMaskPortrait;
- }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
-/*
- #pragma mark - Navigation
- 
- // In a storyboard-based application, you will often want to do a little preparation before navigation
- - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
- // Get the new view controller using [segue destinationViewController].
- // Pass the selected object to the new view controller.
- }
- */
 
 @end

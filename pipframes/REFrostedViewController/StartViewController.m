@@ -52,7 +52,7 @@
 
     self.navigationController .navigationBarHidden = YES;
 
-    self.view.backgroundColor =  PHOTO_DEFAULT_COLOR;
+    //self.view.backgroundColor =  PHOTO_DEFAULT_COLOR;
     
     UIImageView *bgImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0,
                                                                              0,
@@ -78,7 +78,7 @@
 
     isSelectionOptionEnable = false;
 
-    [self setUpAllElemnets];
+    
 
     // Do any additional setup after loading the view, typically from a nib.
 }
@@ -87,14 +87,14 @@
 {
     gapValue = (fullScreen.size.height-(toolbarHeight+(fullScreen.size.height*adHieghtPercentage)+(fullScreen.size.height*startAdHieghtPercentage)))/3;
 
-    UIView *nativeAd = [[UIView alloc] initWithFrame:CGRectMake(0,
-                                                                toolbarHeight+gapValue,
-                                                                fullScreen.size.width,
-                                                                fullScreen.size.height*adHieghtPercentage)];
-    [self.view addSubview:nativeAd];
-
-    ShareMediaTypeSelectionController *fbNativeAdView = [[ShareMediaTypeSelectionController alloc] init];
-    [nativeAd addSubview:fbNativeAdView.view];
+//    UIView *nativeAd = [[UIView alloc] initWithFrame:CGRectMake(0,
+//                                                                toolbarHeight+gapValue,
+//                                                                fullScreen.size.width,
+//                                                                fullScreen.size.height*adHieghtPercentage)];
+//    [self.view addSubview:nativeAd];
+//
+//    ShareMediaTypeSelectionController *fbNativeAdView = [[ShareMediaTypeSelectionController alloc] init];
+//    [nativeAd addSubview:fbNativeAdView.view];
 
     [self addToolBar];
 
@@ -102,7 +102,7 @@
     [startAds addStartAd];
 
     adArray = [startAds getDictionaryOfImages];
-    [adArray retain];
+   
 
     if (isSelectionOptionEnable)
     {
@@ -135,7 +135,7 @@
 
 -(void)refreshView
 {
-
+    [self setUpAllElemnets];
     UIView *adView = (UIView *)[self.view viewWithTag:adBagViewTag];
     if (adView!=nil)
     {
@@ -188,7 +188,7 @@
     appTitleLabel.font = [UIFont boldSystemFontOfSize:17.0];
     appTitleLabel.textAlignment = NSTextAlignmentCenter;
     [toolbar addSubview:appTitleLabel];
-    [appTitleLabel release];
+    
 
     UIButton *menu = [UIButton buttonWithType:UIButtonTypeCustom];
     menu.frame = CGRectMake(5, 5, toolbarHeight-10, toolbarHeight-10);
@@ -201,8 +201,7 @@
     [store setImage:[UIImage imageNamed:@"gift-box.png"] forState:UIControlStateNormal];
     [store addTarget:self action:@selector(store) forControlEvents:UIControlEventTouchUpInside];
     [toolbar addSubview:store];
-    [toolbar release];
-}
+    }
 
 -(void)addADView:(BOOL)isWithStartAd
 {
@@ -291,7 +290,7 @@
         currentTag++;
 
         xCenter = xCenter+buttonFrame.size.width+gap;
-        [titleLabel release];
+       
             
     }
 
@@ -302,8 +301,7 @@
     [scrollView setContentOffset:CGPointMake(0, 0) animated:NO];
     [UIView commitAnimations];
 
-    [scrollView release];
-    [adBgView release];
+   
 }
 
 
@@ -493,10 +491,7 @@
 
 -(void)dealloc
 {
-    [imageArray release];
-    [adArray release];
-    [super dealloc];
-
+    
 }
 
 

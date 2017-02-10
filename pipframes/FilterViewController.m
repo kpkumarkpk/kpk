@@ -7,13 +7,15 @@
 //
 
 #import "FilterViewController.h"
-#import "FourthViewController.h"
+
 #import "ViewController.h"
 #import <QuartzCore/QuartzCore.h>
-#import "GPUImage.h"
-#import "OT_TabBar.h"
 #import "Config.h"
+#import <AVFoundation/AVFoundation.h>
 #import <GoogleMobileAds/GoogleMobileAds.h>
+#import "GPUImage.h"
+#import "PreviewViewController.h"
+#import "AppConfig.h"
 
 #define screenWidth                         ([[UIScreen mainScreen]bounds].size.width)
 #define screenHeight                        ([[UIScreen mainScreen]bounds].size.height)
@@ -23,29 +25,26 @@
 int buttonindex;
 int selectedImgTag;
 
+int filtertag;
 
-@interface FilterViewController ()<UINavigationControllerDelegate,OT_TabBarDelegate>
+@interface FilterViewController ()<UINavigationControllerDelegate>
 {
     
     GPUImagePicture *lookupImageSource;
     
-    UIImage   *blurredImagefinal;
+    
+    UIImage   *blurredImagefinal, * sample1,*sample3;
+    
     
     UIImageView *screenimgv;
     
     UIImage *squaredscreenshotimg;
+    Boolean buttonFlashing;
     
-    
+     UIImage * sample;
     int index1;
     int index2;
-    
-    SSAlphaPassView * mainview;
-
-    
-    NSString *titlename;
-    
-    BOOL fill;
-    
+    UIImage *resultantImage;
     
     
     
@@ -58,239 +57,204 @@ int selectedImgTag;
 
 @implementation FilterViewController
 
-@synthesize selimg,blurredimgv,maskimgv,clearedimgv,downscroll,menuitems,mybutton,maskimages,shapeimages,shapeimgv,frontimage,filterNames,blurredimage,backgroundstripimagev,customtabbar,filterbutton,interstitial,activeimage,blurredImage1,frontimage1,newimage1;
+@synthesize selimg,blurredimgv,filterbt,mainview,maskimgv,clearedimgv,downscroll,menuitems,mybutton,maskimages,shapeimages,shapeimgv,frontimage,filterNames,blurredimage,backgroundstripimagev,filterbutton,interstitial,activeimage,blurredImage1,frontimage1,newimage1;
 
 float player_y = 0.0;
 
-int xCoord;
-int yCoord;
-int buffer;
-
-int buttonHeight;
-int buttonWidth;
-
-
-
-
 
 -(void)viewWillAppear:(BOOL)animated
+
 {
-
     
-    NSLog(@"111111");
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    
-    NSData *data = [defaults objectForKey:@"theKey"];
-    
-    frontimage=[NSKeyedUnarchiver unarchiveObjectWithData:data];
-    
-    
-    if([titlename isEqualToString:@"Foreground"])
-    {
-        fill = TRUE;
-        
-        [self pickforegroundimagefromgallery];
-        
-        NSLog(@"aaaaa%d",fill);
-        
-    }
-    else if ([titlename isEqualToString:@"Background Image"])
-    {
-        
-        NSLog(@"bbb");
-    }
-    else
-    {
-        fill= FALSE;
-        
-        NSLog(@"ccccv %d",fill);
-        
-        
-    }
-    
-    
-    
+    [clearedimgv setImage:[self add_EffectOnImage:frontimage1 effectNumber:_currentEffectNumber]];
 }
-
 
 
 - (void)viewDidLoad
 {
     
-    downscroll=[[UIScrollView alloc]init];
-    backgroundstripimagev=[[UIImageView alloc]init];
-    blurredimgv=[[UIImageView alloc]init];
-    clearedimgv=[[SSAlphaPassButton alloc]init];
-    maskimgv=[[SSAlphaPassButton alloc]init];
-    shapeimgv=[[SSAlphaPassButton alloc]init];
     
-    
-    
-    if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
-        // iOS 7
-        [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationSlide];
-    } else {
-        // iOS 6
-        [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationSlide];
-    }
-
-    
-    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
-    {
-        
-        
-        backgroundstripimagev . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight),player_y, 1.5*ImageView_Hieight, 1.5*ImageView_Hieight);
-        
-        
-        blurredimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight),player_y, 1.5*ImageView_Hieight, 1.5*ImageView_Hieight);
-        
-        mainview=[[SSAlphaPassView alloc]initWithFrame:(CGRectMake(0, 0, 1.5*ImageView_Hieight,1.5*ImageView_Hieight))];
-        
-        clearedimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, 1.5*ImageView_Hieight, 1.5*ImageView_Hieight);
-        
-        maskimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, 1.5*ImageView_Hieight, 1.5*ImageView_Hieight);
-        
-        
-        shapeimgv . frame = CGRectMake(((fullScreen.size.width - ImageView_Hieight)-3*downstrip_height)/2,player_y, 1.5*ImageView_Hieight, 1.5*ImageView_Hieight);
-        
-        
-        
-        
-    }else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
-    {
-        
-        backgroundstripimagev . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-        
-        
-        blurredimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight),player_y, ImageView_Hieight, ImageView_Hieight);
-        
-        mainview=[[SSAlphaPassView alloc]initWithFrame:(CGRectMake(0, 0, ImageView_Hieight,ImageView_Hieight))];
-        
-        clearedimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-        
-        maskimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-        
-        shapeimgv . frame = CGRectMake(((fullScreen.size.width - ImageView_Hieight)-downstrip_height-10)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-        
-        
-        
-        
-    }
-    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
-    {
-        
-        backgroundstripimagev . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-        
-        blurredimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight),player_y, ImageView_Hieight, ImageView_Hieight);
-        
-        mainview=[[SSAlphaPassView alloc]initWithFrame:(CGRectMake(0, 0, ImageView_Hieight,ImageView_Hieight))];
-        
-        clearedimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-        
-        maskimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-        
-        
-        shapeimgv . frame = CGRectMake(((fullScreen.size.width - ImageView_Hieight)-downstrip_height+10)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-        
-    }
-    
-    //-------------Background strip imageview-------------//
-    backgroundstripimagev . center = CGPointMake(fullScreen.size.width/2, fullScreen.size.height/2);
-    backgroundstripimagev.backgroundColor=[UIColor colorWithRed:0.227 green:0.227 blue:0.227 alpha:1];
-    [self.view addSubview:backgroundstripimagev];
-    
-    
-    
-    //---------------BLURRED IMAGEVIEW-----------------//
-    
-        blurredimgv . center = CGPointMake(fullScreen.size.width/2, fullScreen.size.height/2);
-    
-    blurredimgv.contentMode=UIViewContentModeScaleAspectFit;
-    
-    activeimage = [self squareImageWithImage:selimg scaledToSize:blurredimgv.frame.size];
-    blurredImage1=activeimage;
-    [self blur:blurredImage1];
-    
-    
-    [self.view addSubview:blurredimgv];
-    
-    
-    
-    //--------main uiview-------------//
-    
-    mainview.center = CGPointMake(screenWidth/2, screenHeight/2);
-    [mainview setBackgroundColor:[UIColor clearColor]];
-    [mainview setUserInteractionEnabled:YES];
-    [self.view addSubview:mainview];
-    
-    
-    //---------clear imageview--------//
-    
-    frontimage1=activeimage;
-    clearedimgv.image=frontimage1;
-    [clearedimgv setUserInteractionEnabled:YES];
-    [mainview addSubview:clearedimgv];
-    
-    
-    //--------mask imageview---------//
-    maskimgv . center = CGPointMake(fullScreen.size.width/2, fullScreen.size.height/2);
-    [maskimgv setImage:[UIImage imageNamed:@"image2@.png"]];
-    [maskimgv setBackgroundColor:[UIColor clearColor]];
-    
-    
-    
-    //--------Shapeimageview--------------//
-    
-    [shapeimgv setImage:[UIImage imageNamed:@"small2@.png"]];
-    
-    [clearedimgv addSubview:shapeimgv];
-    
-    [mainview setMaskView:shapeimgv];///-----------framecut----
-    [self.view addSubview:maskimgv];
-    [self.view bringSubviewToFront:maskimgv];
-    
-    
-    //----------Ui Pan Gesture Recognizer-------------//
-    
-    UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(handlePan:)];
-    [panGestureRecognizer setDelegate:self];
-    [clearedimgv addGestureRecognizer:panGestureRecognizer];
-    
-    
-    //----------- UI Pinch Gesture Recognizer---------------//
-    
-    UIPinchGestureRecognizer *pinchRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    [pinchRecognizer setDelegate:self];
-    [clearedimgv addGestureRecognizer:pinchRecognizer];
-    
-    //------------Ui Rotattion Gesture Recognizer-----------//
-    
-    UIRotationGestureRecognizer *rotationRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotate:)];
-    [rotationRecognizer setDelegate:self];
-    [clearedimgv addGestureRecognizer:rotationRecognizer];
-    
-    // [self allocateresourcesfordefaultpip];
-    
-    [self allocateResourcesForTopToolBar];
-    
+    [self uidesign];
+ 
     [self allocatemenubarforaddframespage];
     
     
     [super viewDidLoad];
     
     
-    NSLog(@"activeimage %@", selimg);
+    interstitial = [[GADInterstitial alloc] initWithAdUnitID:fullscreen_admob_id];
+    GADRequest *request = [GADRequest request];
     
-       [self showFullScreenAd];
+    [interstitial loadRequest:request];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(showFullScreenAd) name:UIApplicationDidBecomeActiveNotification  object:nil];
+    
+    interstitial = [self createAndLoadInterstitial];
+    
+    [self addPreLoad];
+
+    
+   // [self showFullScreenAd];
+    
+   // [[NSNotificationCenter defaultCenter] addObserver:self  selector:@selector(showFullScreenAd) name:UIApplicationDidBecomeActiveNotification  object:nil];
 }
 
 
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+-(void)galleryhereshow
 {
-    return YES;
+    
+//    if (downscroll!=nil)
+//    {
+//       
+//        [downscroll removeFromSuperview];
+//        
+////        [mybutton removeFromSuperview];
+////        
+////        [filterbt removeFromSuperview];
+////        
+//        filterbt=nil;
+//        
+//        mybutton=nil;
+//        
+//        downscroll=nil;
+//    }
+    
+    
+    UIActionSheet *popup = [[UIActionSheet alloc] initWithTitle:@"Change Image here" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:
+                            @"Fore-Ground Image",
+                            
+                            
+                            nil];
+    
+    
+    popup.tag = 1;
+    
+    
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+    {
+        [popup showInView:self.view];
+        
+        NSLog(@"calling gallery");
+        
+        
+    }
+    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+    {
+        
+        UIAlertView *gallery=[[UIAlertView alloc]initWithTitle:@"changeImage!!" message:@"" delegate:self cancelButtonTitle:@"Cancel"otherButtonTitles:@"Foreground" ,nil];
+        
+        [gallery show];
+        
+        
+    }
+    
+}
+
+
+- (GADInterstitial *)createAndLoadInterstitial
+{
+     interstitial =
+    [[GADInterstitial alloc] initWithAdUnitID:fullscreen_Admob_id];
+    interstitial.delegate = self;
+    [interstitial loadRequest:[GADRequest request]];
+    return interstitial;
+}
+
+
+- (void)interstitialWillPresentScreen:(GADInterstitial *)ad
+{
+    interstitial = [self createAndLoadInterstitial];
+    NSLog(@"Google add gets loadedfr");
+}
+
+-(void)addPreLoad
+{
+    NSLog(@"kkkkkkkkkk");
+    if ([interstitial isReady])
+    {
+        
+        [interstitial presentFromRootViewController:self];
+    }
+    
+}
+
+
+-(void)uidesign
+
+{
+    
+    
+    
+    //---------------BLURRED IMAGEVIEW-----------------//
+    
+    
+    blurredimgv=[[UIImageView alloc]init];
+    
+    clearedimgv=[[UIImageView alloc]init];
+    
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
+    {
+        
+         blurredimgv . frame = CGRectMake(0,0, ImageView_Hieight+120, ImageView_Hieight+320);
+        
+        clearedimgv . frame = CGRectMake(55, 10, ImageView_Hieight,ImageView_Hieight);
+        
+        activeimage =[self squareImageFromImage:selimg scaledToSize:500];
+        frontimage1=activeimage;
+        
+    }
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+    {
+        
+       blurredimgv . frame = CGRectMake(0,0, ImageView_Hieight+120, ImageView_Hieight+250);
+        
+       clearedimgv . frame = CGRectMake(55, 10, ImageView_Hieight,ImageView_Hieight);
+       
+        activeimage =[self squareImageFromImage:selimg scaledToSize:500];
+        frontimage1=activeimage;
+        
+    }
+    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+    {
+        
+         blurredimgv . frame = CGRectMake(0,0, ImageView_Hieight+120, ImageView_Hieight-150);
+        
+         clearedimgv . frame = CGRectMake(160, 20, 450, 450);
+        
+        
+         activeimage =[self squareImageFromImage:selimg scaledToSize:500];
+         frontimage1=activeimage;
+        
+    }
+   
+    blurredimgv.image=[UIImage imageNamed:@"bbbg_03.jpg"];
+    blurredimgv.contentMode=UIViewContentModeScaleAspectFill;
+    blurredImage1=activeimage;
+    
+    sample=blurredimgv.image;
+    [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(sample)forKey:@"SomeValue"];
+    NSLog(@"image is fdgdtytfry %@",sample);
+    
+    
+    CGFloat width = sample.size.width;
+    CGFloat height = sample.size.height;
+    
+    NSLog(@"Captured image is %f  %f",width,height);
+    
+    NSLog(@" pip buttonpress method object at index%@",sample);
+    
+    [self.view addSubview:blurredimgv];
+    
+    //---------clear imageview--------//
+    
+    
+    
+   
+    clearedimgv.backgroundColor = [UIColor clearColor];
+     clearedimgv.clipsToBounds = YES;
+   // clearedimgv.contentMode=UIViewContentModeScaleAspectFill;
+    clearedimgv.image=frontimage1;
+    [self.view addSubview:clearedimgv];
+
 }
 
 
@@ -298,22 +262,26 @@ int buttonWidth;
 {
     
     
-    //-------------Background strip imageview-------------//
     
-    backgroundstripimagev=[[UIImageView alloc]init];
-    backgroundstripimagev . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-    backgroundstripimagev . center = CGPointMake(fullScreen.size.width/2, fullScreen.size.height/2);
-    backgroundstripimagev.backgroundColor=[UIColor colorWithRed:0.227 green:0.227 blue:0.227 alpha:1];
-    [self.view addSubview:backgroundstripimagev];
+    if (clearedimgv!=nil)
+    {
+        clearedimgv=nil;
+    }
+    
+    if (blurredimgv!=nil)
+    {
+        blurredimgv=nil;
+    }
     
     
+
     
-    //---------------BLURRED IMAGEVIEW-----------------//
+     //---------------BLURRED IMAGEVIEW-----------------//
     
     
     blurredimgv=[[UIImageView alloc]init];
-    blurredimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight),player_y, ImageView_Hieight, ImageView_Hieight);
-    blurredimgv . center = CGPointMake(fullScreen.size.width/2, fullScreen.size.height/2);
+    blurredimgv . frame = CGRectMake(0,player_y, ImageView_Hieight+40, ImageView_Hieight+200);
+   
     
     if (selectedImgTag==0)
     {
@@ -322,16 +290,11 @@ int buttonWidth;
         
     }
     
-    [self blur:blurredImage1];
-    
     [self.view addSubview:blurredimgv];
-    
     
     //--------main uiview-------------//
     
-    
-    mainview=[[SSAlphaPassView alloc]initWithFrame:(CGRectMake(0, 0, ImageView_Hieight,ImageView_Hieight))];
-    mainview.center = CGPointMake(screenWidth/2, screenHeight/2);
+    mainview=[[UIView alloc]initWithFrame:(CGRectMake(0, 0, ImageView_Hieight+5,ImageView_Hieight))];
     [mainview setBackgroundColor:[UIColor clearColor]];
     [mainview setUserInteractionEnabled:YES];
     [self.view addSubview:mainview];
@@ -340,12 +303,9 @@ int buttonWidth;
     //---------clear imageview--------//
     
     
+    clearedimgv=[[UIImageView alloc]init];
+    clearedimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,10, ImageView_Hieight+5, ImageView_Hieight);
     
-    clearedimgv=[[SSAlphaPassButton alloc]init];
-
-    clearedimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-    
-    //frontimage1=activeimage;
     
     if (selectedImgTag==1)
     {
@@ -358,119 +318,8 @@ int buttonWidth;
     [clearedimgv setUserInteractionEnabled:YES];
     [mainview addSubview:clearedimgv];
     
-    
-    
-    
-    //--------mask imageview---------//
-    
-    maskimgv=[[SSAlphaPassButton alloc]init];
-
-    maskimgv . frame = CGRectMake((fullScreen.size.width - ImageView_Hieight)/2,player_y, ImageView_Hieight, ImageView_Hieight);
-    maskimgv . center = CGPointMake(fullScreen.size.width/2, fullScreen.size.height/2);
-    
-        maskimgv.image=[UIImage imageNamed:[maskimages objectAtIndex:index1]];
-    
-    
-    
-        //--------Shapeimageview--------------//
-    
-    
-    
-    shapeimgv=[[SSAlphaPassButton alloc]init];
-
-    
-    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
-    {
-        shapeimgv . frame = CGRectMake(((fullScreen.size.width - ImageView_Hieight)-downstrip_height+10)/2,player_y, ImageView_Hieight, ImageView_Hieight);///--------for iphone
-        
-        
-        
-    }else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
-    {
-        
-        
-        shapeimgv . frame = CGRectMake(((fullScreen.size.width - ImageView_Hieight)-downstrip_height-10)/2,player_y, ImageView_Hieight, ImageView_Hieight);   /////-------for ipad
-        
-        
-    }
-    
-    shapeimgv.image=[UIImage imageNamed:[shapeimages objectAtIndex:index2]];
-    
-    
-    
-    [clearedimgv addSubview:shapeimgv];
-    [mainview setMaskView:shapeimgv];///-----------framecut----
-    [self.view addSubview:maskimgv];
-    [self.view bringSubviewToFront:maskimgv];
-    
-    //----------Ui Pan Gesture Recognizer-------------//
-    
-    UIPanGestureRecognizer *panGestureRecognizer = [[UIPanGestureRecognizer alloc]initWithTarget:self action:@selector(handlePan:)];
-    [panGestureRecognizer setDelegate:self];
-    [clearedimgv addGestureRecognizer:panGestureRecognizer];
-    
-    
-    //----------- UI Pinch Gesture Recognizer---------------//
-    
-    UIPinchGestureRecognizer *pinchRecognizer = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(handlePinch:)];
-    [pinchRecognizer setDelegate:self];
-    [clearedimgv addGestureRecognizer:pinchRecognizer];
-    
-    //------------Ui Rotattion Gesture Recognizer-----------//
-    
-    UIRotationGestureRecognizer *rotationRecognizer = [[UIRotationGestureRecognizer alloc] initWithTarget:self action:@selector(handleRotate:)];
-    [rotationRecognizer setDelegate:self];
-    [clearedimgv addGestureRecognizer:rotationRecognizer];
-    
     [self viewWillAppear:YES];
     
-    
-}
-
-- (void)handlePan:(UIPanGestureRecognizer*) recognizer
-{
-    clearedimgv.userInteractionEnabled=YES;
-    
-    UIGestureRecognizerState state = [recognizer state];
-    
-    if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged)
-    {
-        CGPoint translation = [recognizer translationInView:recognizer.view];
-        [recognizer.view setTransform:CGAffineTransformTranslate(recognizer.view.transform, translation.x, translation.y)];
-        [recognizer setTranslation:CGPointZero inView:recognizer.view];
-    }
-    
-}
-- (IBAction)handleRotate:(UIRotationGestureRecognizer *)recognizer
-
-{
-    clearedimgv.userInteractionEnabled=YES;
-    
-    UIGestureRecognizerState state = [recognizer state];
-    
-    if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged)
-    {
-        CGFloat rotation = [recognizer rotation];
-        [recognizer.view setTransform:CGAffineTransformRotate(recognizer.view.transform, rotation)];
-        [recognizer setRotation:0];
-    }
-}
-- (IBAction)handlePinch:(UIPinchGestureRecognizer *)recognizer
-{
-    
-    
-    clearedimgv.userInteractionEnabled=YES;
-    
-    
-    UIGestureRecognizerState state = [recognizer state];
-    
-    if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged)
-    {
-        CGFloat scale = [recognizer scale];
-        [recognizer.view setTransform:CGAffineTransformScale(recognizer.view.transform, scale, scale)];
-        [recognizer setScale:1.0];
-    }
-
     
 }
 
@@ -531,194 +380,147 @@ int buttonWidth;
     return newImage;
 }
 
-- (void)allocateResourcesForTopToolBar
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    UIView *topToolBar = [[UIView alloc] init];
+        downscroll.hidden=YES;
     
-    
-    topToolBar.backgroundColor=[UIColor colorWithRed:0.149 green:0.149 blue:0.149 alpha:1];
-    
-    topToolBar . frame = CGRectMake(0, 0, fullScreen.size.width, downstrip_height);
-    topToolBar . userInteractionEnabled = YES;
-    [self.view addSubview:topToolBar];
-    
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, fullScreen.size.width, downstrip_height)];
-    label.textAlignment = NSTextAlignmentCenter;
-    label.backgroundColor = [UIColor clearColor];
-    label.shadowOffset = CGSizeMake(0, 1);
-    label.textColor = [UIColor whiteColor];
-    label.text = @"Pip Frames";
-    if (UIUserInterfaceIdiomPad == UI_USER_INTERFACE_IDIOM())
-    {
-        label.font = [UIFont boldSystemFontOfSize:17.0];
-    }
-    else
-    {
-        label.font = [UIFont boldSystemFontOfSize:15.0];
-        
-    }
-    
-    [topToolBar addSubview:label];
-    
-    UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    backButton . frame = CGRectMake(0, 0, downstrip_height, downstrip_height);
-    [backButton setImage:[UIImage imageNamed:@"BACK"] forState:UIControlStateNormal];
-    [backButton addTarget:self action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
-    [topToolBar addSubview:backButton];
     
 }
 -(void)goBack
 {
     
-    [self.navigationController popViewControllerAnimated:YES];
+    [self.navigationController popViewControllerAnimated:NO];
     
-    
-    
-    
-}
-
+ }
 
 -(void)allocatemenubarforaddframespage
 {
-    customtabbar = [[OT_TabBar alloc]init];
     
-  
+    UIView* _topView = [[UIView alloc]initWithFrame:CGRectMake(0,fullScreen.size.height-downstrip_height,fullScreen.size.width ,downstrip_height)];
+    [_topView setBackgroundColor:[UIColor colorWithPatternImage:[UIImage imageNamed:@"downstrip_img.jpg"]]];
+    [self.view addSubview:_topView];
+    
+    UIButton*backButton,*gallerybutton,*backgroundbutton,*effects,*nextButton;
+    
+    
+    
+    backButton =[[UIButton alloc]initWithFrame:CGRectMake(0, 0, 38, 38)];
+
+    backgroundbutton =[[UIButton alloc]initWithFrame:CGRectMake(0, 0, 38, 38)];
+    
+    gallerybutton =[[UIButton alloc]initWithFrame:CGRectMake(0, 0, 38, 38)];
+    
+    effects =[[UIButton alloc]initWithFrame:CGRectMake(0, 0, 38, 38)];
+    
+    nextButton =[[UIButton alloc]initWithFrame:CGRectMake(0, fullScreen.size.height-downstrip_height, 38, 38)];
+    
     
     if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
     {
+        backButton.center=CGPointMake(self.view.frame.size.width*0.13, self.view.frame.size.height*0.96);
         
+        backgroundbutton.center=CGPointMake(self.view.frame.size.width*0.32, self.view.frame.size.height*0.96);
         
-        customtabbar = [[OT_TabBar alloc]initWithFrame:CGRectMake(0,fullScreen.size.height-downstrip_height,fullScreen.size.width ,downstrip_height)];
+        gallerybutton.center=CGPointMake(self.view.frame.size.width*0.50, self.view.frame.size.height*0.96);
         
+        effects.center=CGPointMake(self.view.frame.size.width*0.69, self.view.frame.size.height*0.96);
+        
+        nextButton.center=CGPointMake(self.view.frame.size.width*0.88, self.view.frame.size.height*0.96);
 
-        
-        
-    }else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+    }
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
     {
+        backButton.center=CGPointMake(self.view.frame.size.width*0.13, self.view.frame.size.height*0.96);
         
+        backgroundbutton.center=CGPointMake(self.view.frame.size.width*0.32, self.view.frame.size.height*0.96);
         
-        customtabbar = [[OT_TabBar alloc]initWithFrame:CGRectMake(0,fullScreen.size.height-(downstrip_height),fullScreen.size.width ,downstrip_height)];
+        gallerybutton.center=CGPointMake(self.view.frame.size.width*0.50, self.view.frame.size.height*0.96);
         
-        NSLog(@"gbchdsbcdc");
+        effects.center=CGPointMake(self.view.frame.size.width*0.69, self.view.frame.size.height*0.96);
         
+        nextButton.center=CGPointMake(self.view.frame.size.width*0.88, self.view.frame.size.height*0.96);
         
     }
-    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
     {
+        backButton.center=CGPointMake(self.view.frame.size.width*0.13, self.view.frame.size.height*0.976);
         
-        customtabbar = [[OT_TabBar alloc]initWithFrame:CGRectMake(0,fullScreen.size.height-downstrip_height,fullScreen.size.width ,downstrip_height)];
+        backgroundbutton.center=CGPointMake(self.view.frame.size.width*0.32, self.view.frame.size.height*0.976);
         
-
+        gallerybutton.center=CGPointMake(self.view.frame.size.width*0.50, self.view.frame.size.height*0.976);
+        
+        effects.center=CGPointMake(self.view.frame.size.width*0.69, self.view.frame.size.height*0.976);
+        
+        nextButton.center=CGPointMake(self.view.frame.size.width*0.88, self.view.frame.size.height*0.976);
         
     }
     
+    // --------- Back Button ----------------//
+    
+   
+    [backButton setBackgroundImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"back_active"] forState:UIControlStateHighlighted];
+    backButton .contentMode = UIViewContentModeScaleAspectFit;
+    [backButton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [backButton addTarget:self action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:backButton];
+    
+    
+     // --------- backgroundbutton Button ----------------//
+    
+   
+   
+    [backgroundbutton setBackgroundImage:[UIImage imageNamed:@"bg"] forState:UIControlStateNormal];
+    [backgroundbutton setBackgroundImage:[UIImage imageNamed:@"bg_active"] forState:UIControlStateHighlighted];
+     backgroundbutton .contentMode = UIViewContentModeScaleAspectFit;
+    [backgroundbutton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [backgroundbutton addTarget:self action:@selector(galleryhereshow) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:backgroundbutton];
 
     
-    customtabbar.delegate = self;
     
+    // --------- gallery Button ----------------//
+    [gallerybutton setBackgroundImage:[UIImage imageNamed:@"fx"] forState:UIControlStateNormal];
+    [gallerybutton setBackgroundImage:[UIImage imageNamed:@"fx_active"] forState:UIControlStateHighlighted];
+    gallerybutton .contentMode = UIViewContentModeScaleAspectFit;
+    [gallerybutton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [gallerybutton addTarget:self action:@selector(filtereffects) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:gallerybutton];
     
-    customtabbar.backgroundColor = [UIColor colorWithRed:0.149 green:0.149 blue:0.149 alpha:1];
-    
-    customtabbar.showOverlayOnSelection = NO;
-    
-    
-    OT_TabBarItem *frames = [[OT_TabBarItem alloc]initWithImage:[UIImage imageNamed:@"PIP"]
-                                                  selectedImage:[UIImage imageNamed:@"PIP-1"]
-                                                            tag:0];
-    
-    OT_TabBarItem *gallery = [[OT_TabBarItem alloc]initWithImage:[UIImage imageNamed:@"FROGROUND"]
-                                                   selectedImage:[UIImage imageNamed:@"FROGROUND-1"]
-                                                             tag:1];
-    
-    OT_TabBarItem *effects = [[OT_TabBarItem alloc]initWithImage:[UIImage imageNamed:@"FILTER"]
-                                                   selectedImage:[UIImage imageNamed:@"FILTER-1"]
-                                                             tag:2];
-    OT_TabBarItem *next = [[OT_TabBarItem alloc]initWithImage:[UIImage imageNamed:@"NEXT"]
-                                                selectedImage:[UIImage imageNamed:@"NEXT-1"]
-                                                          tag:3];
-    
-    customtabbar.itemTitleArray = [NSArray arrayWithObjects:@"frames",@"gallery",@"filter",@"next", nil];
-    customtabbar.items = [NSArray arrayWithObjects:frames,gallery,effects,next, nil];
-    
-    
-    [self.view addSubview:customtabbar];
-    
-}
--(void)otTabBar:(OT_TabBar*)tbar didSelectItem:(OT_TabBarItem*)tItem
-{
-    switch (tItem.tag)
-    {
-        case 0:
-        {
-            
-            [self addpiphere];
-            
-            break;
-        }
-        case 1:
-        {
-            
-            [self galleryhere];
-            
-            break;
-        }
-        case 2:
-        {
-            
-            
-            [self filtereffects];
-            
-            break;
-        }
-        case 3:
-        {
-            
-            [self moveheretoanother];
-            
-            
-            break;
-        }
-        default:
-        {
-            break;
-        }
-    }
-}
 
-- (UIImage*) blur:(UIImage*)theImage
-{
+    
+    // --------- effects Button ----------------//
+    [effects setBackgroundImage:[UIImage imageNamed:@"bg11"] forState:UIControlStateNormal];
+    [effects setBackgroundImage:[UIImage imageNamed:@"bg11_active"] forState:UIControlStateHighlighted];
+    effects .contentMode = UIViewContentModeScaleAspectFit;
+    [effects setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [effects addTarget:self action:@selector(addpiphere) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:effects];
+    
+
+    
+    // --------- Next Button ----------------//
+    [nextButton setBackgroundImage:[UIImage imageNamed:@"next"] forState:UIControlStateNormal];
+    [nextButton setBackgroundImage:[UIImage imageNamed:@"next_active"] forState:UIControlStateHighlighted];
+    nextButton .contentMode = UIViewContentModeScaleAspectFit;
+    [nextButton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [nextButton addTarget:self action:@selector(moveheretoanother) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:nextButton];
+
     
     
-    CIContext *context = [CIContext contextWithOptions:nil];
-    CIImage *inputImage = [CIImage imageWithCGImage:theImage.CGImage];
     
-    // setting up Gaussian Blur (we could use one of many filters offered by Core Image)
-    CIFilter *imagefilter = [CIFilter filterWithName:@"CIGaussianBlur"];
-    [imagefilter setValue:inputImage forKey:kCIInputImageKey];
-    [imagefilter setValue:[NSNumber numberWithFloat:8.0f] forKey:@"inputRadius"];
-    CIImage *result = [imagefilter valueForKey:kCIOutputImageKey];
-    
-    CGImageRef cgImage = [context createCGImage:result fromRect:[inputImage extent]];
-    
-    UIImage *returnImage = [UIImage imageWithCGImage:cgImage];//create a UIImage for this function to "return" so that ARC can manage the memory of the blur... ARC can't manage CGImageRefs so we need to release it before this function "returns" and ends.
-    CGImageRelease(cgImage);//release CGImageRef because ARC doesn't manage this on its own.
-    
-    blurredimgv.image=returnImage;
-    
-        return returnImage;
     
     
 }
-
-
-
 
 
 -(void)addpiphere
 {
     
-    
+    downscroll.hidden=NO;
     [self allocatemenubarforaddframespage];
+    
     
     if (downscroll!=nil)
     {
@@ -726,16 +528,18 @@ int buttonWidth;
         downscroll=nil;
         
         [mybutton removeFromSuperview];
-        mybutton=nil;
+         mybutton=nil;
     }
+    
+    
     
     //----------------Down UIscrollview for frames--------//
     
     
     
-     xCoord=0;
-     yCoord=4;
-     buffer = 5;
+    int xCoord=0;
+    int yCoord=4;
+    int buffer = 5;
     
     
     
@@ -743,40 +547,33 @@ int buttonWidth;
     downscroll=[[UIScrollView alloc]init];
     
     
-    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
     {
-
         
-         buttonHeight=screenWidth*0.2;
-        
+        int buttonHeight=screenWidth*0.2;
         
         
-        downscroll.frame=CGRectMake(0,fullScreen.size.height-downstrip_height-buttonHeight-3*buffer,fullScreen.size.width ,downstrip_height+45);
+        
+        downscroll.frame=CGRectMake(0,fullScreen.size.height-downstrip_height-buttonHeight-2*buffer,fullScreen.size.width ,downstrip_height+28);
+        
+        
         
         
     }else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
     {
         
         
-         buttonHeight=screenWidth*0.09;
+        int buttonHeight=screenWidth*0.09;
         
         downscroll.frame=CGRectMake(0,fullScreen.size.height-downstrip_height-buttonHeight-2*buffer,fullScreen.size.width ,downstrip_height+28);
         
         
-    }
-    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
-    {
         
-        
-        
-         buttonHeight=screenWidth*0.2;
-        
-        
-        
-        downscroll.frame=CGRectMake(0,fullScreen.size.height-downstrip_height-buttonHeight-2*buffer,fullScreen.size.width ,downstrip_height+28);
-
         
     }
+    
+   
+    
     downscroll.backgroundColor = [UIColor colorWithRed:0.149 green:0.149 blue:0.149 alpha:1];
     
     
@@ -797,43 +594,54 @@ int buttonWidth;
     
     CATransition *strip_transition=[CATransition animation];
     strip_transition.type=kCATransitionPush;
-    strip_transition.subtype=kCATransitionFromTop;
     strip_transition.duration=0.50;
     [[downscroll layer] addAnimation:strip_transition forKey:@"down-strip.jpg"];
     
     [mybutton addSubview:downscroll];
     
-    [self.view sendSubviewToBack:downscroll];
-    
     
     
     //-------------------Adding frames to Ui scrollview------------------//
     
-    menuitems = [[NSArray alloc]initWithObjects:@"fs1.png",@"fs2.png",@"fs3.png",@"fs4.png",@"fs5.png",@"fs6.png",@"fs7.png",@"fs9.png",@"fs10.png",@"fs11.png",@"fs12.png",@"fs13.png",@"fs14.png",@"fs15.png",@"fs16.png",@"fs17.png",@"fs18.png",@"fs19.png",@"fs20.png",@"fs21.png",@"fs22.png",@"fs23.png",@"fs24.png",@"fs25.png",@"fs26.png",@"fs28.png",@"fs29.png",@"fs30.png",nil];
+    menuitems = [[NSArray alloc]initWithObjects:@"bg_03.jpg",@"bg_01.jpg",@"bg_02.jpg",@"bg_04.jpg",@"bg_05.jpg",@"bg_06.jpg",@"bg_07.jpg",@"bg_08.jpg",@"bg_09.jpg",@"bg_10.jpg",nil];
     
     
     for (int b=0;b<[menuitems count];b++)
     {
         if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
+    {
+        int buttonHeight=screenWidth*0.2;
+        int buttonWidth=screenWidth*0.2;
+        
+        
+        mybutton = [[UIButton alloc]initWithFrame:CGRectMake(xCoord, yCoord, buttonWidth, buttonHeight)];
+        
+        xCoord += buttonWidth + buffer;
+        
+
+        downscroll.contentSize=CGSizeMake(400, yCoord);
+
+    }
+        if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
         {
             
-             buttonHeight=screenWidth*0.2;
-             buttonWidth=screenWidth*0.2;
+            int buttonHeight=screenWidth*0.2;
+            int buttonWidth=screenWidth*0.2;
             
             
             mybutton = [[UIButton alloc]initWithFrame:CGRectMake(xCoord, yCoord, buttonWidth, buttonHeight)];
             
             xCoord += buttonWidth + buffer;
             
-            [downscroll setContentSize:CGSizeMake((29*screenWidth*0.2)+(29*buffer), yCoord)];
+            downscroll.contentSize=CGSizeMake(700, yCoord);
             
             
         }else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
         {
             
             
-             buttonHeight=screenWidth*0.09;
-             buttonWidth=screenWidth*0.09;
+            int buttonHeight=screenWidth*0.09;
+            int buttonWidth=screenWidth*0.09;
             
             
             
@@ -841,23 +649,8 @@ int buttonWidth;
             
             xCoord += buttonWidth + buffer;
             
-            [downscroll setContentSize:CGSizeMake((29*screenWidth*0.09)+(29*buffer), yCoord)];
+            downscroll.contentSize=CGSizeMake(100, yCoord);
             
-            
-            
-        }
-        else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
-        {
-            
-             buttonHeight=screenWidth*0.2;
-             buttonWidth=screenWidth*0.2;
-            
-            
-            mybutton = [[UIButton alloc]initWithFrame:CGRectMake(xCoord, yCoord, buttonWidth, buttonHeight)];
-            
-            xCoord += buttonWidth + buffer;
-            
-            [downscroll setContentSize:CGSizeMake((29*screenWidth*0.2)+(29*buffer), yCoord)];
             
             
         }
@@ -876,79 +669,492 @@ int buttonWidth;
         [mybutton addTarget:self action:@selector(pipbuttonpress:) forControlEvents:UIControlEventTouchUpInside];
         
         [downscroll addSubview:mybutton];
-}
+        
+        }
     
     
     //-----------Adding small frames inside a frames----------------------//
     
     maskimages=
-    [[NSArray alloc]initWithObjects:@"image1@.png",@"image2@.png",@"image3@.png",@"image4@.png",@"image5@.png",@"image6@.png",@"image7@.png",@"image9@.png",@"image10@.png",@"image11@.png",@"image12@.png",@"image13@.png",@"image14@.png",@"image15@.png",@"image16@.png",@"image17@.png",@"image18@.png",@"image19@.png",@"image20@.png",@"image21@.png",@"image22@.png",@"image23@.png",@"image24@.png",@"image25@.png",@"image26@.png",@"image28@.png",@"image29@.png",@"image30@.png", nil];
+    [[NSArray alloc]initWithObjects:@"bbbg_03.jpg",@"bbbg_01.jpg",@"bbbg_02.jpg",@"bbbg_04.jpg",@"bbbg_05.jpg",@"bbbg_06.jpg",@"bbbg_07.jpg",@"bbbg_08.jpg",@"bbbg_09.jpg",@"bbbg_10.jpg",nil];
     
     
     //----------------Adding shapes to the frames----------------------//
-    
-    shapeimages=
-    [[NSArray alloc]initWithObjects:@"small1@.png",@"small2@.png",@"small3@.png",@"small4@.png",@"small5@.png",@"small6@.png",@"small7@.png",@"small9@.png",@"small10@.png",@"small11@.png",@"small12@.png",@"small13@.png",@"small14@.png",@"small15@.png",@"small16@.png",@"small17@.png",@"small18@.png",@"small19@.png",@"small20@.png",@"small21@.png",@"small22@.png",@"small23@.png",@"small24@.png",@"small25@.png",@"small26@.png",@"small28@.png",@"small29@.png",@"small30@.png", nil];
     
     
     
     
     
 }
-
-
+-(UIImage *) resizeImage:(UIImage *)orginalImage resizeSize:(CGSize)size
+{
+    CGFloat actualHeight = orginalImage.size.height;
+    CGFloat actualWidth = orginalImage.size.width;
+    //  if(actualWidth <= size.width && actualHeight<=size.height)
+    //  {
+    //      return orginalImage;
+    //  }
+    float oldRatio = actualWidth/actualHeight;
+    float newRatio = size.width/size.height;
+    if(oldRatio < newRatio)
+    {
+        oldRatio = size.height/actualHeight;
+        actualWidth = oldRatio * actualWidth;
+        actualHeight = size.height;
+    }
+    else
+    {
+        oldRatio = size.width/actualWidth;
+        actualHeight = oldRatio * actualHeight;
+        actualWidth = size.width;
+    }
+    
+    CGRect rect = CGRectMake(0.0,0.0,actualWidth,actualHeight);
+    UIGraphicsBeginImageContext(rect.size);
+    [orginalImage drawInRect:rect];
+    orginalImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return orginalImage;
+}
 -(void)pipbuttonpress:(UIButton*)sender
 {
     
     NSLog(@"Selected current pip button:%ld",(long)sender.tag);
     
-    
     int index = (int)sender.tag;
     
-    
-    index1=(int)sender.tag;
-    
-    
-    index2=(int)sender.tag;
-    
-    
-    UIImage * sample;
-    
     sample=[menuitems objectAtIndex:index];
+    NSLog(@"index%d",index);
     
+    sample=blurredimgv.image;
+    
+    blurredimgv.image = [UIImage imageNamed:[maskimages objectAtIndex:index]];
+    
+    sample=[self resizeImage:blurredimgv.image resizeSize:CGSizeMake(ImageView_Hieight+120, ImageView_Hieight+250)];
    
-    shapeimgv.image=[UIImage imageNamed:[shapeimages objectAtIndex:index2]];
+    [[NSUserDefaults standardUserDefaults] setObject:UIImagePNGRepresentation(sample)forKey:@"SomeValue"];
+    NSLog(@"image is fdgdtytfry %@",sample);
     
-    maskimgv.image=[UIImage imageNamed:[maskimages objectAtIndex:index1]];
+    
+    CGFloat width = sample.size.width;
+    CGFloat height = sample.size.height;
+
     
     NSLog(@" pip buttonpress method object at index%@",sample);
     
+    NSLog(@"Selected current pip button:%ld",(long)sender.tag);
+    
+    NSLog(@"Captured image is %f  %f",width,height);
+
+    
 }
 
--(void)galleryhere
+
+-(void)filtereffects
 {
-    
+     downscroll.hidden=NO;
+     [self allocatemenubarforaddframespage];
+   
     if (downscroll!=nil)
     {
         [downscroll removeFromSuperview];
-        
-        [mybutton removeFromSuperview];
-        
-        mybutton=nil;
-        
         downscroll=nil;
+        
+        [filterbutton removeFromSuperview];
+        filterbutton=nil;
+    }
+    
+    
+    int xCoord=0;
+    int yCoord=4;
+    int buffer = 5;
+    
+    
+    //----------------Down UIscrollview for frames--------//
+    
+    
+    downscroll=[[UIScrollView alloc]init];
+    
+    
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+    {
+        
+        int buttonHeight=screenWidth*0.2;
+        
+        
+        downscroll.frame=CGRectMake(0,fullScreen.size.height-downstrip_height-buttonHeight-2*buffer,fullScreen.size.width ,downstrip_height+28);
+        
+        
+        
+        
+    }else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+    {
+        
+        
+        int buttonHeight=screenWidth*0.09;
+        
+        downscroll.frame=CGRectMake(0,fullScreen.size.height-downstrip_height-buttonHeight-2*buffer,fullScreen.size.width ,downstrip_height+28);
+        
+    }
+    
+    
+    downscroll.backgroundColor = [UIColor colorWithRed:0.149 green:0.149 blue:0.149 alpha:1];
+    
+    downscroll.contentSize=activeimage.size;
+    
+    [downscroll setUserInteractionEnabled:YES];
+    
+    [downscroll setShowsHorizontalScrollIndicator:NO];
+    
+    [downscroll setShowsVerticalScrollIndicator:NO];
+    
+    [downscroll setUserInteractionEnabled:YES];
+    
+    
+    [self.view addSubview:downscroll];
+    
+    //------applying animation------------//
+    
+    CATransition *strip_transition=[CATransition animation];
+    strip_transition.type=kCATransitionPush;
+    strip_transition.duration=0.50;
+    [[downscroll layer] addAnimation:strip_transition forKey:@"down-strip.jpg"];
+    
+    [filterbutton addSubview:downscroll];
+    
+    filterNames = [[NSArray alloc] initWithObjects:@"Original",@"Chrome",@"Dodge",@"Retro",@"Custom Chrome",@"Geo",@"Hd Plus",@"Lomo",@"Rainy",@"Skyblue",@"Splittone",@"Splittone Green",@"Sunny",@"TechniColor2",@"TechniColor3",@"Acid",@"Vintage",@"Amatorka",nil];
+    
+    
+    UIImage *sample_Image = [UIImage imageNamed:@"Fx_gallery_120.png"];
+    
+    for (int b=0;b<[filterNames count];b++)
+    {
+        
+        if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+        {
+            
+            int buttonHeight=screenWidth*0.2;
+            int buttonWidth=screenWidth*0.2;
+            
+            filterbutton = [[UIButton alloc]initWithFrame:CGRectMake(xCoord, yCoord, buttonWidth, buttonHeight)];
+            
+            xCoord += buttonWidth + buffer;
+            
+            downscroll.contentSize=CGSizeMake(1300, yCoord);
+            
+        }
+        else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+            
+        {
+            
+            
+            int buttonHeight=screenWidth*0.09;
+            int buttonWidth=screenWidth*0.09;
+            
+            filterbutton = [[UIButton alloc]initWithFrame:CGRectMake(xCoord, yCoord, buttonWidth, buttonHeight)];
+            
+            xCoord += buttonWidth + buffer;
+            
+            [downscroll setContentSize:CGSizeMake((20*screenWidth*0.09)+(20*buffer), yCoord)];
+            
+        }
+        
+        [filterbutton setTag:b];
+        
+        [filterbutton setImage:[self add_EffectOnImage:sample_Image effectNumber:b] forState:UIControlStateNormal];
+        
+        [filterbutton addTarget:self action:@selector(add_ColorEffect:) forControlEvents:UIControlEventTouchUpInside];
+        
+        [filterbutton setSelected:true];
+        
+        NSString *nameOfEffect = [filterNames objectAtIndex:b];
+        
+        [self addTitle:filterbutton  name:nameOfEffect];
+        
+        [downscroll addSubview:filterbutton];
+    }
+    
+}
+- (void)add_ColorEffect:(UIButton *)sndr
+{
+    
+    int index = (int)sndr.tag;
+    
+    _currentEffectNumber  = index;
+    
+    [clearedimgv setImage:[self add_EffectOnImage:frontimage1 effectNumber:_currentEffectNumber]];
+    
+}
+
+-(void)addTitle:(UIButton *)but name:(NSString *)effectName
+{
+    
+    UILabel *titleLabel = [[UILabel alloc] init];
+    titleLabel . frame = CGRectMake(0, but.frame.size.height - 20, but.frame.size.width, 20);
+    titleLabel . text =  effectName;
+    titleLabel . textAlignment = NSTextAlignmentCenter;
+    titleLabel . font = [UIFont systemFontOfSize:10.0];
+    titleLabel . textColor = [UIColor whiteColor];
+    titleLabel . backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.8];
+    [but addSubview:titleLabel];
+    
+}
+
+- (UIImage *)add_EffectOnImage:(UIImage *)image effectNumber:(int)effectNo
+{
+    resultantImage = nil;
+    
+    
+    if (effectNo == 0)
+    {
+        resultantImage = image;
+        
+        NSLog(@"Images applies effect:%d",effectNo);
+        
+    }
+    
+    else
+    {
+        
+        resultantImage = [self apply_GPUFilter:effectNo onImage:image];
+        
+        NSLog(@"Images applies effect:%d",effectNo);
+        
+    }
+    
+    return  resultantImage;
+}
+
+
+
+-(id)filterWithLookupmage:(UIImage *)_image
+{
+    id fil = [[GPUImageFilterGroup alloc]init];
+    
+    NSAssert(_image, @"To use GPUImageAmatorkaFilter you need to add lookup_amatorka.png from GPUImage/framework/Resources to your application bundle.");
+    
+    
+    lookupImageSource = nil;
+    GPUImageLookupFilter *lookupFilter = nil;
+    
+    lookupImageSource = [[GPUImagePicture alloc] initWithImage:_image];
+    
+    lookupFilter = [[GPUImageLookupFilter alloc] init];
+    
+    [lookupImageSource addTarget:lookupFilter atTextureLocation:1];
+    [lookupImageSource processImage];
+    
+    [fil setInitialFilters:[NSArray arrayWithObjects:lookupFilter, nil]];
+    [fil setTerminalFilter:lookupFilter];
+    
+    return fil;
+}
+
+-(UIImage*)apply_GPUFilter:(int)filterValue onImage:(UIImage*)img
+{
+    UIImage *outputImage = nil;
+    
+    GPUImageFilterGroup *selectedFilter = nil;
+    
+   
+    UIImage *filtr_image1 = [UIImage imageNamed:@"lookup_chrom.png"];
+    UIImage *filtr_image2 = [UIImage imageNamed:@"lookup_chrom_dodge.png"];
+    UIImage *filtr_image3 = [UIImage imageNamed:@"lookup_chrom_retro.png"];
+    UIImage *filtr_image4 = [UIImage imageNamed:@"lookup_customchrom.png"];
+    UIImage *filtr_image5 = [UIImage imageNamed:@"lookup_Geo.png"];
+    UIImage *filtr_image6 = [UIImage imageNamed:@"lookup_hdrplus.png"];
+    UIImage *filtr_image7 = [UIImage imageNamed:@"lookup_lomo.png"];
+    UIImage *filtr_image8 = [UIImage imageNamed:@"lookup_lomo1.png"];
+    UIImage *filtr_image9 = [UIImage imageNamed:@"lookup_rainy.png"];
+    UIImage *filtr_image10 = [UIImage imageNamed:@"lookup_skyblue.png"];
+    UIImage *filtr_image11 = [UIImage imageNamed:@"lookup_splittonecolor.png"];
+    UIImage *filtr_image12 = [UIImage imageNamed:@"lookup_splittonegreen.png"];
+    UIImage *filtr_image13 = [UIImage imageNamed:@"lookup_sunny.png"];
+    UIImage *filtr_image14 = [UIImage imageNamed:@"lookup_technicolor2.png"];
+    UIImage *filtr_image15 = [UIImage imageNamed:@"lookup_technicolor3.png"];
+    UIImage *filtr_image16 = [UIImage imageNamed:@"lookup_urbanacid.png"];
+    UIImage *filtr_image17 = [UIImage imageNamed:@"lookup_vintagefilm.png"];
+    UIImage *filtr_image18 = [UIImage imageNamed:@"lookup_amatorka.png"];
+    
+    
+    
+    
+    switch (filterValue)
+    {
+        case 1:
+            
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            filtr_image1 = nil;
+            
+            
+            break;
+            
+        case 2:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image2, 0.5)]];
+            filtr_image2 = nil;
+            
+            
+            break;
+            
+        case 3:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image3, 0.5)]];
+            filtr_image3 = nil;
+            
+            break;
+            
+        case 4:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image4, 0.5)]];
+            filtr_image4 = nil;
+            
+            break;
+            
+        case 5:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image5, 0.5)]];
+            filtr_image5 = nil;
+            
+            
+            break;
+            
+        case 6:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image6, 0.5)]];
+            filtr_image6 = nil;
+            
+            break;
+            
+        case 7:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image7, 0.5)]];
+            filtr_image7 = nil;
+            
+            break;
+            
+        case 8:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image8, 0.5)]];
+            filtr_image8 = nil;
+            
+            break;
+            
+            
+        case 9:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image9, 0.5)]];
+            filtr_image9 = nil;
+            
+            break;
+            
+            
+        case 10:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image10,0.5)]];
+            filtr_image10 = nil;
+            
+            break;
+            
+        case 11:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image11, 0.5)]];
+            filtr_image11 = nil;
+            
+            break;
+            
+        case 12:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image12, 0.5)]];
+            filtr_image12 = nil;
+            
+            break;
+            
+        case 13:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image13, 0.5)]];
+            filtr_image13 = nil;
+            
+            break;
+            
+        case 14:
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image14, 0.5)]];
+            filtr_image14 = nil;
+            
+            break;
+            
+        case 15:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image15, 0.5)]];
+            filtr_image15 = nil;
+            
+            break;
+            
+            
+        case 16:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image16, 0.5)]];
+            filtr_image16 = nil;
+            
+            break;
+            
+            
+        case 17:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image17, 0.5)]];
+            filtr_image17 = nil;
+            
+            break;
+            
+        case 18:
+            
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
+            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image18, 0.5)]];
+            filtr_image18 = nil;
+            
+            break;
+            
+        case 19:
+            break;
+            
+            
+        default:
+            break;
+            
     }
     
     
     
+    [selectedFilter forceProcessingAtSizeRespectingAspectRatio:CGSizeMake(0, 0)];
+    outputImage = [selectedFilter imageByFilteringImage:img];
     
-    UIAlertView *gallery=[[UIAlertView alloc]initWithTitle:@"ChangeImage!!" message:@"" delegate:self cancelButtonTitle:@"Cancel"otherButtonTitles:@"Foreground" ,@"Background",nil];
     
-    [gallery show];
+    
+    
+    return outputImage;
+    
+    
+    
+}
 
-    
-    
-   }
+
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
@@ -957,8 +1163,6 @@ int buttonWidth;
     
     if ([title isEqualToString:@"Foreground"])
     {
-        
-        
         selectedImgTag=0;
         
         [self pickforegroundimagefromgallery];
@@ -966,19 +1170,10 @@ int buttonWidth;
         NSLog(@"changeforeground");
         
     }
-    else if ([title isEqualToString:@"Background"])
-    {
-        
-        selectedImgTag=1;
-        
-        [self pickforegroundimagefromgallery];
-        
-        NSLog(@"Background");
-        
-        
-    }
+
     else
     {
+        
         [alertView removeFromSuperview];
         
     }
@@ -986,97 +1181,164 @@ int buttonWidth;
 
 
 
+- (void)actionSheet:(UIActionSheet *)popup clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    
+    switch (popup.tag)
+    {
+        case 1:
+        {
+            switch (buttonIndex)
+            
+            {
+                case 0:
+                    
+                    selectedImgTag = 0;
+                    
+                    [self pickforegroundimagefromgallery];
+                    
+                    
+                    NSLog(@"pick foreground image from gallary");
+                    
+                    break;
+                    
+//                case 1:
+//                    
+//                    selectedImgTag = 1;
+//                    
+//                    [self pickforegroundimagefromgallery];
+//                    
+//                    
+//                    NSLog(@"pick background image from gallary");
+//                    
+//                    break;
+                    
+                default:
+                    
+                    break;
+                    
+            }
+            break;
+        }
+        default:
+            break;
+    }
+}
 
 -(void)pickforegroundimagefromgallery
 {
     
-    UIImagePickerController *imagpicker=[[UIImagePickerController alloc]init];
-    imagpicker.delegate=self;
-    imagpicker.sourceType=UIImagePickerControllerSourceTypePhotoLibrary;
-    imagpicker.allowsEditing=NO;
-    [self presentViewController:imagpicker animated:YES completion:nil];
     
     
-}
+    UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
+    
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
+    {
+        imagePicker.delegate = self;
+        imagePicker.allowsEditing = YES;
+        imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+        
+    }
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+    {
+        imagePicker.delegate = self;
+        imagePicker.allowsEditing = YES;
+        imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    }
+    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+    {
+        imagePicker.delegate = self;
+        imagePicker.allowsEditing = NO;
+        imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    }
+    
+    
+    [self presentViewController:imagePicker animated:YES completion:nil];
+    
 
+}
 
 -(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     
     [self dismissViewControllerAnimated:YES completion:nil];
     
-    
-    
     if (selectedImgTag == 0)
         
     {
+        
         frontimage1=nil;
         
         NSLog(@"foregroundimage");
         
-        [clearedimgv setContentMode:UIViewContentModeScaleAspectFit];
+        //frontimage=[info valueForKey:UIImagePickerControllerEditedImage];
         
-        frontimage=[info valueForKey:UIImagePickerControllerOriginalImage];
-        
-        frontimage1=frontimage;
+        if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
+        {
+            frontimage=[info valueForKey:UIImagePickerControllerEditedImage];
+        }
+        if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+        {
+            frontimage=[info valueForKey:UIImagePickerControllerEditedImage];
+        }
+        else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+        {
+            frontimage=[info valueForKey:UIImagePickerControllerOriginalImage];
+        }
 
-       clearedimgv.image=frontimage1;
         
-    }
+        frontimage1=[self squareImageFromImage:frontimage scaledToSize:500];
+        NSLog(@"image size is %f---%f",frontimage.size.width,frontimage.size.height);
+        
+        clearedimgv.image=frontimage1;
     
-    else if (selectedImgTag==1)
         
-    {
-        blurredImage1=nil;
-        
-        NSLog(@"Backgroundimage");
-        
-        frontimage=[info valueForKey:UIImagePickerControllerOriginalImage];
-        
-        newimage1=[[UIImage alloc]init];
-        
-        NSLog(@"chosenimage%@",frontimage);
-        
-        
-        if(frontimage.imageOrientation == 1)
-        {
-            newimage1 = [self imageRotatedByDegrees:frontimage deg:180];
-        }
-        
-        else if (frontimage.imageOrientation == 2)
-        {
-            newimage1 = [self imageRotatedByDegrees:frontimage deg:270];
-        }
-        else if (frontimage .imageOrientation == 3)
-        {
-            newimage1 = [self imageRotatedByDegrees:frontimage deg:90];
-        }
-        else
-        {
-            newimage1=frontimage;
-        }
-        
-        blurredImage1 = [self blur:newimage1];
-        
-        blurredimgv.image=[self squareImageWithImage:blurredImage1 scaledToSize:backgroundstripimagev.frame.size];
-        
-        NSLog(@"afterblurring%@",blurredimgv.image);
-        
-        blurredimgv.contentMode = UIViewContentModeScaleAspectFit;
-        
-        blurredimgv.clipsToBounds = YES;
-        
-        [backgroundstripimagev sendSubviewToBack:blurredimgv];
-        
-        [mainview sendSubviewToBack:blurredimgv];
-        
-        
-    }
+     }
     
+    
+
+ 
 }
+
+- (UIImage *)squareImageFromImage:(UIImage *)image scaledToSize:(CGFloat)newSize {
+    CGAffineTransform scaleTransform;
+    CGPoint origin;
+    
+    if (image.size.width > image.size.height) {
+        CGFloat scaleRatio = newSize / image.size.height;
+        scaleTransform = CGAffineTransformMakeScale(scaleRatio, scaleRatio);
+        
+        origin = CGPointMake(-(image.size.width - image.size.height) / 2.0f, 0);
+    } else {
+        CGFloat scaleRatio = newSize / image.size.width;
+        scaleTransform = CGAffineTransformMakeScale(scaleRatio, scaleRatio);
+        
+        origin = CGPointMake(0, -(image.size.height - image.size.width) / 2.0f);
+    }
+    
+    CGSize size = CGSizeMake(newSize, newSize);
+    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)]) {
+        UIGraphicsBeginImageContextWithOptions(size, YES, 0);
+    } else {
+        UIGraphicsBeginImageContext(size);
+    }
+    
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextConcatCTM(context, scaleTransform);
+    
+    [image drawAtPoint:origin];
+    
+    image = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return image;
+}
+
 -(UIImage *)imageRotatedByDegrees:(UIImage*)oldImage deg:(CGFloat)degrees
 {
     
+    // calculate the size of the rotated view's containing box for our drawing space
     
     UIView *rotatedViewBox = [[UIView alloc] initWithFrame:CGRectMake(0,0,oldImage.size.width, oldImage.size.height)];
     
@@ -1122,440 +1384,13 @@ int buttonWidth;
     
 }
 
+
+
+
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker;
 {
+    
     [picker dismissViewControllerAnimated:YES completion:nil];
-    
-}
-
--(void)filtereffects
-{
-    if (downscroll!=nil)
-    {
-        [downscroll removeFromSuperview];
-        downscroll=nil;
-        
-        [filterbutton removeFromSuperview];
-        filterbutton=nil;
-    }
-    
-    
-     xCoord=0;
-     yCoord=4;
-     buffer = 5;
-    
-    
-    //----------------Down UIscrollview for frames--------//
-    
-    
-    downscroll=[[UIScrollView alloc]init];
-    
-    
-    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
-    {
-        
-         buttonHeight=screenWidth*0.2;
-        
-        
-        
-        downscroll.frame=CGRectMake(0,fullScreen.size.height-downstrip_height-buttonHeight-3*buffer,fullScreen.size.width ,downstrip_height+45);
-        
-        
-    }else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
-    {
-        
-        
-         buttonHeight=screenWidth*0.09;
-        
-        downscroll.frame=CGRectMake(0,fullScreen.size.height-downstrip_height-buttonHeight-2*buffer,fullScreen.size.width ,downstrip_height+28);
-        
-        
-    }
-    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
-    {
-         buttonHeight=screenWidth*0.2;
-        
-        
-        downscroll.frame=CGRectMake(0,fullScreen.size.height-downstrip_height-buttonHeight-2*buffer,fullScreen.size.width ,downstrip_height+28);
-        
-    }
-   
-    
-    downscroll.backgroundColor = [UIColor colorWithRed:0.149 green:0.149 blue:0.149 alpha:1];
-    
-    downscroll.contentSize=activeimage.size;
-    
-    [downscroll setUserInteractionEnabled:YES];
-    
-    [downscroll setShowsHorizontalScrollIndicator:NO];
-    
-    [downscroll setShowsVerticalScrollIndicator:NO];
-    
-    [downscroll setUserInteractionEnabled:YES];
-    
-    [self.view addSubview:downscroll];
-    
-    //------applying animation------------//
-    
-    CATransition *strip_transition=[CATransition animation];
-    strip_transition.type=kCATransitionPush;
-    strip_transition.subtype=kCATransitionFromTop;
-    strip_transition.duration=0.50;
-    [[downscroll layer] addAnimation:strip_transition forKey:@"down-strip.jpg"];
-    [filterbutton addSubview:downscroll];
-    
-    [self.view sendSubviewToBack:downscroll];
-
-    
-    filterNames = [[NSArray alloc] initWithObjects:@"Original",@"Chrome",@"Dodge",@"Retro",@"Custom Chrome",@"Geo",@"Hd Plus",@"Lomo",@"Lomo1",@"Rainy",@"Skyblue",@"Splittone",@"Splittone Green",@"Sunny",@"Techni Color2",@"Techni Color3",@"Acid",@"Vintage",@"Amatorka", nil];
-    
-    UIImage *sample_Image = [UIImage imageNamed:@"5.jpg"];
-    
-    for (int b=0;b<[filterNames count];b++)
-    {
-        
-        if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
-        {
-             buttonHeight=screenWidth*0.2;
-             buttonWidth=screenWidth*0.2;
-            filterbutton = [[UIButton alloc]initWithFrame:CGRectMake(xCoord, yCoord, buttonWidth, buttonHeight)];
-            
-            xCoord += buttonWidth + buffer;
-            
-            [downscroll setContentSize:CGSizeMake((20*screenWidth*0.2)+(20*buffer), yCoord)];
-            
-        }
-        else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
-            
-        {
-            
-             buttonHeight=screenWidth*0.09;
-             buttonWidth=screenWidth*0.09;
-            filterbutton = [[UIButton alloc]initWithFrame:CGRectMake(xCoord, yCoord, buttonWidth, buttonHeight)];
-            
-            xCoord += buttonWidth + buffer;
-            
-            [downscroll setContentSize:CGSizeMake((20*screenWidth*0.09)+(20*buffer), yCoord)];
-            
-        }
-        
-        
-        
-        [filterbutton setTag:b];
-        
-        
-        filterbutton.backgroundColor=[UIColor blueColor];
-        
-        
-        [filterbutton setImage:[self add_EffectOnImage:sample_Image effectNumber:b] forState:UIControlStateNormal];
-        
-        [filterbutton addTarget:self action:@selector(add_ColorEffect:) forControlEvents:UIControlEventTouchUpInside];
-        
-        [filterbutton setSelected:false];
-        
-        NSString *nameOfEffect = [filterNames objectAtIndex:b];
-        
-        
-        
-        [self addTitle:filterbutton  name:nameOfEffect];
-        
-        
-        [downscroll addSubview:filterbutton];
-        
-        
-    }
-    
-}
-- (void)add_ColorEffect:(UIButton *)sndr
-{
-    
-    int index = (int)sndr.tag;
-    
-    _currentEffectNumber  = index;
-    
-    
-    
-    
-    
-    [clearedimgv setImage:[self add_EffectOnImage:frontimage1 effectNumber:_currentEffectNumber]];
-    
-    
-}
-
-
--(void)addTitle:(UIButton *)but name:(NSString *)effectName
-{
-    
-    UILabel *titleLabel = [[UILabel alloc] init];
-    titleLabel . frame = CGRectMake(0, but.frame.size.height - 20, but.frame.size.width, 20);
-    titleLabel . text =  effectName;
-    titleLabel . textAlignment = NSTextAlignmentCenter;
-    titleLabel . font = [UIFont systemFontOfSize:10.0];
-    titleLabel . textColor = [UIColor whiteColor];
-    titleLabel . backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.8];
-    [but addSubview:titleLabel];
-    
-    
-    
-}
-
-- (UIImage *)add_EffectOnImage:(UIImage *)image effectNumber:(int)effectNo
-{
-    UIImage *resultantImage = nil;
-    
-    
-    if (effectNo == 0)
-    {
-        resultantImage = image;
-        
-        NSLog(@"Images applies effect:%d",effectNo);
-        
-    }
-    
-    else
-    {
-        
-        
-        resultantImage = [self apply_GPUFilter:effectNo onImage:image];
-        
-        NSLog(@"Images applies effect:%d",effectNo);
-        
-    }
-    
-    
-    return  resultantImage;
-    
-}
-
-
-
--(id)filterWithLookupmage:(UIImage *)_image
-{
-    id fil = [[GPUImageFilterGroup alloc]init];
-    
-    NSAssert(_image, @"To use GPUImageAmatorkaFilter you need to add lookup_amatorka.png from GPUImage/framework/Resources to your application bundle.");
-    
-    
-    lookupImageSource = nil;
-    GPUImageLookupFilter *lookupFilter = nil;
-    
-    lookupImageSource = [[GPUImagePicture alloc] initWithImage:_image];
-    
-    lookupFilter = [[GPUImageLookupFilter alloc] init];
-    
-    [lookupImageSource addTarget:lookupFilter atTextureLocation:1];
-    [lookupImageSource processImage];
-    
-    [fil setInitialFilters:[NSArray arrayWithObjects:lookupFilter, nil]];
-    [fil setTerminalFilter:lookupFilter];
-    
-    return fil;
-}
-
--(UIImage*)apply_GPUFilter:(int)filterValue onImage:(UIImage*)img
-{
-    UIImage *outputImage = nil;
-    
-    GPUImageFilterGroup *selectedFilter = nil;
-    
-    UIImage *filtr_image1 = [UIImage imageNamed:@"lookup_300.png"];
-    
-   // UIImage *filtr_image2 = [UIImage imageNamed:@"lookup_chrom.png"];
-    UIImage *filtr_image3 = [UIImage imageNamed:@"lookup_chrom_dodge.png"];
-    UIImage *filtr_image4 = [UIImage imageNamed:@"lookup_chrom_retro.png"];
-    UIImage *filtr_image5 = [UIImage imageNamed:@"lookup_customchrom.png"];
-    UIImage *filtr_image6 = [UIImage imageNamed:@"lookup_Geo.png"];
-    UIImage *filtr_image7 = [UIImage imageNamed:@"lookup_hdrplus.png"];
-    UIImage *filtr_image8 = [UIImage imageNamed:@"lookup_lomo.png"];
-    UIImage *filtr_image9 = [UIImage imageNamed:@"lookup_lomo1.png"];
-    UIImage *filtr_image10 = [UIImage imageNamed:@"lookup_rainy.png"];
-    UIImage *filtr_image11 = [UIImage imageNamed:@"lookup_skyblue.png"];
-    UIImage *filtr_image12 = [UIImage imageNamed:@"lookup_splittonecolor.png"];
-    UIImage *filtr_image13 = [UIImage imageNamed:@"lookup_splittonegreen.png"];
-    UIImage *filtr_image14 = [UIImage imageNamed:@"lookup_sunny.png"];
-    UIImage *filtr_image15 = [UIImage imageNamed:@"lookup_technicolor2.png"];
-    UIImage *filtr_image16 = [UIImage imageNamed:@"lookup_technicolor3.png"];
-    UIImage *filtr_image17 = [UIImage imageNamed:@"lookup_urbanacid.png"];
-    UIImage *filtr_image18 = [UIImage imageNamed:@"lookup_vintagefilm.png"];
-    UIImage *filtr_image19 = [UIImage imageNamed:@"lookup_amatorka.png"];
-    
-    
-    switch (filterValue)
-    {
-        case 1:
-            
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            filtr_image1 = nil;
-            
-            
-            break;
-            
-       /* case 2:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image2, 0.5)]];
-            filtr_image2 = nil;
-            
-            
-            break;*/
-            
-        case 2:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image3, 0.5)]];
-            filtr_image3 = nil;
-            
-            break;
-            
-        case 3:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image4, 0.5)]];
-            filtr_image4 = nil;
-            
-            break;
-            
-        case 4:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image5, 0.5)]];
-            filtr_image5 = nil;
-            
-            
-            break;
-            
-        case 5:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image6, 0.5)]];
-            filtr_image6 = nil;
-            
-            break;
-            
-        case 6:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image7, 0.5)]];
-            filtr_image7 = nil;
-            
-            break;
-            
-        case 7:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image8, 0.5)]];
-            filtr_image8 = nil;
-            
-            break;
-            
-            
-        case 8:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image9, 0.5)]];
-            filtr_image9 = nil;
-            
-            break;
-            
-            
-        case 9:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image10, 0.5)]];
-            filtr_image10 = nil;
-            
-            break;
-            
-        case 10:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image11, 0.5)]];
-            filtr_image11 = nil;
-            
-            break;
-            
-        case 11:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image12, 0.5)]];
-            filtr_image12 = nil;
-            
-            break;
-            
-        case 12:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image13, 0.5)]];
-            filtr_image13 = nil;
-            
-            break;
-            
-        case 13:
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image14, 0.5)]];
-            filtr_image14 = nil;
-            
-            break;
-            
-        case 14:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image15, 0.5)]];
-            filtr_image15 = nil;
-            
-            break;
-            
-            
-        case 15:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image16, 0.5)]];
-            filtr_image16 = nil;
-            
-            break;
-            
-            
-        case 16:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image17, 0.5)]];
-            filtr_image17 = nil;
-            
-            break;
-            
-        case 17:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image18, 0.5)]];
-            filtr_image18 = nil;
-            
-            break;
-            
-        case 18:
-            
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image1, 0.5)]];
-            selectedFilter = [self filterWithLookupmage:[UIImage imageWithData:UIImageJPEGRepresentation(filtr_image19, 0.5)]];
-            filtr_image19 = nil;
-            
-            break;
-            
-            
-        default:
-            break;
-            
-    }
-    
-    
-    
-    [selectedFilter forceProcessingAtSizeRespectingAspectRatio:CGSizeMake(0, 0)];
-    outputImage = [selectedFilter imageByFilteringImage:img];
-    
-    
-    
-    
-    return outputImage;
-    
     
     
 }
@@ -1567,7 +1402,7 @@ int buttonWidth;
 
 -(void)moveheretoanother
 {
-    
+    [self addPreLoad];
     
     if (downscroll!=nil)
     {
@@ -1585,129 +1420,65 @@ int buttonWidth;
         
     }
     
-    if (customtabbar!=nil)
-    {
-        
-        [customtabbar removeFromSuperview];
-        customtabbar=nil;
-        
-        
-    }
+    UIGraphicsBeginImageContext(CGSizeMake(self.view.frame.size.width,self.view.frame.size.height));
+    CGContextRef context =UIGraphicsGetCurrentContext();
+    [clearedimgv.layer renderInContext:context];
+    UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
     
-    
-    
-    
-    
-    UIGraphicsBeginImageContext(self.view.bounds.size);
-    
-        screenimgv=[[UIImageView alloc]initWithFrame:blurredimgv.frame];
-    
-    screenimgv.center = CGPointMake(screenWidth/2, screenHeight/2);
-    
-    [screenimgv setBackgroundColor:[UIColor clearColor]];
-    
-    [blurredimgv.layer renderInContext:UIGraphicsGetCurrentContext()];
-    
-    [clearedimgv.layer renderInContext:UIGraphicsGetCurrentContext()];
-    
-    [maskimgv.layer renderInContext:UIGraphicsGetCurrentContext()];
-    
-    [shapeimgv.layer renderInContext:UIGraphicsGetCurrentContext()];
-    
-    
-    CGSize size = CGSizeMake(blurredimgv.frame.size.width, blurredimgv.frame.size.height);
-    
-    UIGraphicsBeginImageContextWithOptions(size, NO, [UIScreen mainScreen].scale);
-    
-    //CGRect rec = CGRectMake(-downstrip_height, -3*downstrip_height,screenWidth+2*downstrip_height, screenHeight+6*downstrip_height);
-    
-    CGRect rec=CGRectMake(-downstrip_height/2, -3.3*downstrip_height, blurredimgv.frame.size.width+downstrip_height, blurredimgv.frame.size.height+6.5*downstrip_height);
-    
-    
-    [self.view drawViewHierarchyInRect:rec afterScreenUpdates:YES];
-    
-    [blurredimgv setHidden:NO];
-    [clearedimgv setHidden:NO];
-    [shapeimgv setHidden:NO];
-    [maskimgv setHidden:NO];
-    
-    
-    UIImage *screenShot = UIGraphicsGetImageFromCurrentImageContext();
-    
-    squaredscreenshotimg = [self squareImageWithImage:screenShot scaledToSize:blurredimgv.frame.size];
     
     UIGraphicsEndImageContext();
+    PreviewViewController *textvwcon=[[PreviewViewController alloc]init];
     
-    [self.view addSubview:screenimgv];
-    
-    FourthViewController *textvwcon=[[FourthViewController alloc]init];
-    
+    textvwcon.sampleimg2=viewImage;
     [self.navigationController pushViewController:textvwcon animated:YES];
-    
-    textvwcon.thirdimage=squaredscreenshotimg;
-    
+
     
     [self allocatemenubarforaddframespage];
     
-  
-    
-    
 }
-
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+   
 }
 
-/*
- #pragma mark - Navigation
- 
- // In a storyboard-based application, you will often want to do a little preparation before navigation
- - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
- // Get the new view controller using [segue destinationViewController].
- // Pass the selected object to the new view controller.
- }
- */
-// Resorces for labe
-
-// Full screen adds
--(void)showFullScreenAd
-{
-    if (interstitial != nil)
-    {
-        interstitial . delegate = nil;
-        
-        interstitial = nil;
-    }
-    
-    interstitial = [[GADInterstitial alloc] initWithAdUnitID:fullscreen_admob_id];
-    interstitial.delegate = self;
-    GADRequest *request=[GADRequest request];
-    
-    [interstitial loadRequest:request];
-    
-}
-
--(void)interstitialDidReceiveAd:(GADInterstitial *)ad
-{
-    if (self.navigationController.visibleViewController == self)
-    {
-        NSLog(@"vissble");
-        [ad presentFromRootViewController:self];
-        
-    }else
-    {
-        NSLog(@"niavig");
-        [ad presentFromRootViewController:self.navigationController.topViewController];
-    }
-}
-
-- (void)interstitialDidDismissScreen:(GADInterstitial *)interstitial
-{
-    NSLog(@"Ad Closed!");
-}
-
+///// Full screen adds
+//-(void)showFullScreenAd
+//{
+//        if (interstitial != nil)
+//        {
+//            interstitial . delegate = nil;
+//    
+//            interstitial = nil;
+//        }
+//    
+//        interstitial = [[GADInterstitial alloc] initWithAdUnitID:fullscreen_admob_id];
+//        interstitial.delegate = self;
+//        GADRequest *request=[GADRequest request];
+//    
+//        [interstitial loadRequest:request];
+//    
+//}
+//
+//-(void)interstitialDidReceiveAd:(GADInterstitial *)ad
+//{
+//    if (self.navigationController.visibleViewController == self)
+//    {
+//        NSLog(@"vissble");
+//        [ad presentFromRootViewController:self];
+//
+//    }else
+//    {
+//        NSLog(@"niavig");
+//        [ad presentFromRootViewController:self.navigationController.topViewController];
+//    }
+//}
+//
+//- (void)interstitialDidDismissScreen:(GADInterstitial *)interstitial
+//{
+//    NSLog(@"Ad Closed!");
+//     //[self addButtonAnimation];
+//}
 
 
 

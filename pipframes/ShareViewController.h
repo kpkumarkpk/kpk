@@ -5,11 +5,11 @@
 //  Created by OUTTHINKING PVT LTD on 2/3/16.
 //  Copyright © 2016 OUTTHINKING PVT LTD. All rights reserved.
 //
-
+//
 #import <UIKit/UIKit.h>
-#import "OT_TabBar.h"
+
 #import "Config.h"
-@import FBAudienceNetwork;
+#import <FBAudienceNetwork/FBAudienceNetwork.h>
 
 #import <MessageUI/MessageUI.h>
 
@@ -25,22 +25,11 @@
 #define facebookUrl @"fb://profile/%@"
 #define moreAppsUrl @"http://appstore.com/outthinkinglimited"
 
-@interface ShareViewController : UIViewController<OT_TabBarDelegate,UIImagePickerControllerDelegate,UIWebViewDelegate,FBNativeAdDelegate,MFMailComposeViewControllerDelegate  >
+@interface ShareViewController : UIViewController<UIImagePickerControllerDelegate,UIWebViewDelegate,MFMailComposeViewControllerDelegate >
 
 @property(nonatomic,strong)UIView *shareview;
-
-@property(nonatomic,strong) OT_TabBar *customTab;
-
-
-
 @property(nonatomic,strong)UIImage *finalscreenshot;
-
-
-
-
-
-
-
-
+@property(nonatomic,strong)UIImageView *finalscreen;
 
 @end
+

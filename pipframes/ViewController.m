@@ -13,6 +13,10 @@
 #import "ViewController.h"
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "FilterViewController.h"
+#import <AssetsLibrary/AssetsLibrary.h>
+#import <AVFoundation/AVFoundation.h>
+
+
 
 
 #define adCoverMediaView_height  ((UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 340  : [[UIScreen mainScreen]bounds].size.width/3)
@@ -28,7 +32,6 @@
 #import "Config.h"
 
 
-//#define button_height 120.0//iphone 120
 
 @interface ViewController ()<UINavigationControllerDelegate>
 
@@ -40,24 +43,29 @@
 
 @property(nonatomic,retain)FBNativeAd *nativeAdRef;
 
+
 @end
 
 @implementation ViewController
+FilterViewController *filt;
+
 @synthesize isSelectionOptionEnable;
 @synthesize gapValue;
 @synthesize totalCount;
 @synthesize adArray;
-@synthesize imageArray;
-
-@synthesize nativeAdRef;
+@synthesize imageArray,thumbImg,url,sourceAsset;
+NSString *moviePath;
+UIAlertView *alert;
+@synthesize nativeAdRef,asset,videoPath,toast,message,timerSet;
+bool frames;
+GADInterstitial *interstitial;
 
 -(void)viewWillAppear:(BOOL)animated
 {
     [self refreshView];
 }
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     
     [super viewDidLoad];
     
@@ -76,71 +84,82 @@
                                                object:nil];
     
     self.navigationController .navigationBarHidden = YES;
-    
     self.view.backgroundColor = [UIColor whiteColor];
     
-    UIImageView *bgImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0,
-                                                                             0,
-                                                                             fullScreen.size.width,
-                                                                             fullScreen.size.height)];
-    bgImageView.backgroundColor = [UIColor colorWithRed:255.0/255.0 green:227.0/255.0 blue:246.0/255.0 alpha:1.0];
-    
+//    UIImageView *bgImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0,
+//                                                                             8,
+//                                                                             fullScreen.size.width,
+//                                                                             fullScreen.size.height/2)];
+//    bgImageView.backgroundColor = [UIColor colorWithRed:255.0/255.0 green:227.0/255.0 blue:246.0/255.0 alpha:1.0];
     
     if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+        
     {
-        bgImageView.image = [UIImage imageNamed:@"back-ground@2x.png"];
+        UIImageView *bgImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0,
+                                                                                 7,
+                                                                                 fullScreen.size.width,
+                                                                                 fullScreen.size.height/2)];
+        bgImageView.backgroundColor = [UIColor colorWithRed:255.0/255.0 green:227.0/255.0 blue:246.0/255.0 alpha:1.0];
+        bgImageView.image = [UIImage imageNamed:@"6-plus-banner.jpg"];
+        [self.view addSubview:bgImageView];
+        
         ///--------for iphone
-        
-        
-        
-    }else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+    }
+    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
     {
-        
-        bgImageView.image = [UIImage imageNamed:@"back-ground@1x.png"];
+        UIImageView *bgImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0,
+                                                                                 5,
+                                                                                 fullScreen.size.width,
+                                                                                 fullScreen.size.height/2)];
+        bgImageView.backgroundColor = [UIColor colorWithRed:255.0/255.0 green:227.0/255.0 blue:246.0/255.0 alpha:1.0];
+        bgImageView.image = [UIImage imageNamed:@"ipad-big-banner_2nd.jpg"];
+        [self.view addSubview:bgImageView];
         /////-------for ipad
-        
     }
     else
     {
-        
-        bgImageView.image = [UIImage imageNamed:@"back-ground@3x.png"];
-        
-        
+        UIImageView *bgImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0,
+                                                                                 7,
+                                                                                 fullScreen.size.width,
+                                                                                 fullScreen.size.height/2)];
+        bgImageView.backgroundColor = [UIColor colorWithRed:255.0/255.0 green:227.0/255.0 blue:246.0/255.0 alpha:1.0];
+        bgImageView.image = [UIImage imageNamed:@"6-plus-banner.jpg"];
+        [self.view addSubview:bgImageView];
     }
-    [self.view addSubview:bgImageView];
+    
     
     isSelectionOptionEnable = true;
     
-    [self setUpAllElemnets];
+    interstitial = [[GADInterstitial alloc] initWithAdUnitID:fullscreen_admob_id];
+    GADRequest *request = [GADRequest request];
+    
+    [interstitial loadRequest:request];
     
     
+    interstitial = [self createAndLoadInterstitial];
+
     
-    // Do any additional setup after loading the view, typically from a nib.
+ 
 }
+
 - (void)showNativeAd
 {
     NSLog(@"native add loading");
-    
-    
-    FBNativeAd *nativeAd = [[FBNativeAd alloc] initWithPlacementID:@"1493630397607620_1493630787607581"];
+    //1493630397607620_1493630787607581
+    FBNativeAd *nativeAd = [[FBNativeAd alloc] initWithPlacementID:@"1718429068407302_1718429551740587"];
     nativeAd.delegate = self;
     self.nativeAdRef = nil;
-    [FBAdSettings addTestDevice:@"a187a7b7fe92ba646dbfc2c3c14490459ef79521"];
+    
     [nativeAd loadAd];
 }
 - (void)nativeAdDidLoad:(FBNativeAd *)nativeAd
 {
     NSLog(@"Native ad loaded __________");
     self.nativeAdRef = nativeAd;
-    
-    
     [self showNativeAdOnView:self.view at:CGPointMake(0.0,50)];
 }
-
 -(void)showNativeAdOnView:(UIView*)v at:(CGPoint)point
 {
-    
-    
     NSLog(@"calling");
     FBNativeAd *nativeAd = self.nativeAdRef;
     if(nil == nativeAd)
@@ -155,58 +174,34 @@
     CGRect full = [[UIScreen mainScreen]bounds];
     CGFloat iconSize = 50.0;
     
-    
     CGFloat calcHeight = full.size.height *adHieghtPercentage;
-    
     CGSize coverImageSize = CGSizeMake(full.size.width, calcHeight-iconSize);
     NSLog(@"showNativeAdOnView: %f,%f",coverImageSize.width,coverImageSize.height);
     
     
-   // FBMediaView *adCoverMediaView = [[FBMediaView alloc] initWithFrame:CGRectMake(0.0, 0.0, coverImageSize.width-10, (full.size.height*adHieghtPercentage)-iconSize)];-----ipod
-    
-    
     FBMediaView *adCoverMediaView = [[FBMediaView alloc] init];
-    
-    
-    
     
     if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
     {
         adCoverMediaView = [[FBMediaView alloc] initWithFrame:CGRectMake(0.0, -toolbarHeight/2, coverImageSize.width-10, (full.size.height*0.98*adHieghtPercentage))];
-        
-
-        
-        
-    }else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+    }
+    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
     {
-        
         adCoverMediaView = [[FBMediaView alloc] initWithFrame:CGRectMake(0.0, -toolbarHeight/2, coverImageSize.width-10, (full.size.height*adHieghtPercentage))];
-        
-
-        
     }
     else  if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
     {
         adCoverMediaView = [[FBMediaView alloc] initWithFrame:CGRectMake(0.0, -toolbarHeight/2, coverImageSize.width-10, (full.size.height*0.98*adHieghtPercentage+10))];
-        
-
-        
+        NSLog(@"xxxxxxxxxxx");
     }
-
-    
     
     [adCoverMediaView setNativeAd:nativeAd];
     
     UIView *nativeAdView  = [[UIView alloc]initWithFrame:CGRectMake(5.0, toolbarHeight+8, coverImageSize.width-10.0, full.size.height*adHieghtPercentage+toolbarHeight/2)];
     [nativeAdView addSubview:adCoverMediaView];
     nativeAdView.layer.masksToBounds = YES;
-    
-    ///UIView *nativeAdShadow = [[UIView alloc]initWithFrame:CGRectMake(5.0, point.y, coverImageSize.width-10.0, coverImageSize.height+iconSize-5.0)];
-    
-    
+
     UIView *nativeAdShadow = [[UIView alloc]initWithFrame:CGRectMake(5.0, toolbarHeight+8, coverImageSize.width-10.0, full.size.height*adHieghtPercentage+toolbarHeight/2)];
-    
-    
     
     nativeAdShadow.backgroundColor = [UIColor whiteColor];
     nativeAdShadow.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -240,7 +235,6 @@
     bodyLabel.lineBreakMode = NSLineBreakByCharWrapping;
     [textView addSubview:bodyLabel];
     
-    
     UIImageView *adIcon = [[UIImageView alloc]initWithFrame:CGRectMake(0.0, 0.0, iconSize, iconSize)];
     adIcon.image = [UIImage imageWithData: [NSData dataWithContentsOfURL:iconForAd.url]];
     //adIcon.image = [UIImage imageWithContentsOfFile:iconForAd.url.path];
@@ -254,8 +248,6 @@
     [adToCall setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
     [nativeAdView addSubview:adToCall];
     
-    
-    
     // Add the ad to the view hirarchy
     [v addSubview:nativeAdView];
     
@@ -263,7 +255,6 @@
     [nativeAd registerViewForInteraction:nativeAdView withViewController:self];
     
 }
-
 
 - (void)nativeAd:(FBNativeAd *)nativeAd didFailWithError:(NSError *)error
 {
@@ -285,45 +276,19 @@
     NSLog(@"Native ad impression is being captured.");
 }
 
-
-
 -(void)setUpAllElemnets
-
 {
-    NSLog(@"native ad load");
-    
     [self showNativeAd];
-    
     
     gapValue = (fullScreen.size.height-(toolbarHeight+(fullScreen.size.height*adHieghtPercentage)+(fullScreen.size.height*startAdHieghtPercentage)))/3;
     
-    //UIView *nativeAd = [[UIView alloc] initWithFrame:CGRectMake(0, toolbarHeight+gapValue, fullScreen.size.width,fullScreen.size.height*adHieghtPercentage)];
-    
-    //[nativeAd setBackgroundColor:[UIColor whiteColor]];
-    
-    
-    //[self loadNativeAd];
-    
-    //  [self.view addSubview:nativeAd];
-    
-    
-    
-    //  ShareMediaTypeSelectionController *fbNativeAdView = [[ShareMediaTypeSelectionController alloc] init];
-    
-    //  [nativeAd addSubview:fbNativeAdView.view];
-    
-    // [nativeAd release];
     
     [self addToolBar];
+    
     StartAdViewController *startAds = [[StartAdViewController alloc] init];
     [startAds addStartAd];
     
-    // [startAds release];
-    
     adArray = [startAds getDictionaryOfImages];
-    
-    //[adArray retain];
-    
     if (isSelectionOptionEnable)
     {
         totalCount = 3;
@@ -355,6 +320,7 @@
 
 -(void)refreshView
 {
+     [self setUpAllElemnets];
     UIView *adView = (UIView *)[self.view viewWithTag:adBagViewTag];
     if (adView!=nil)
     {
@@ -375,10 +341,10 @@
             
             UIButton *rateusButton = (UIButton *)[scrollView viewWithTag:3];
             [self addAnimation:rateusButton];
-            
-            
+
         }
     }
+    
     
 }
 
@@ -405,9 +371,10 @@
     UILabel *appTitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, fullScreen.size.width, toolbarHeight)];
     appTitleLabel .text = applicationName;
     appTitleLabel.textColor = [UIColor darkGrayColor];
-    appTitleLabel.font = [UIFont fontWithName:@"Museo Sans Cyrl 900" size:17.0];
+    appTitleLabel.font = [UIFont boldSystemFontOfSize:17.0];
     appTitleLabel.textAlignment = NSTextAlignmentCenter;
     [toolbar addSubview:appTitleLabel];
+    
     
     UIButton *menu = [UIButton buttonWithType:UIButtonTypeCustom];
     menu.frame = CGRectMake(5, 5, toolbarHeight-10, toolbarHeight-10);
@@ -420,41 +387,24 @@
     [store setImage:[UIImage imageNamed:@"gift-box.png"] forState:UIControlStateNormal];
     [store addTarget:self action:@selector(store) forControlEvents:UIControlEventTouchUpInside];
     [toolbar addSubview:store];
+   
 }
 
 -(void)addADView:(BOOL)isWithStartAd
 {
     UIView *adBgView= [[UIView alloc] init];
     adBgView.tag = adBagViewTag;
-    
-    
-    
-    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
-    {
-        adBgView .frame = CGRectMake(5, toolbarHeight+(2*gapValue)+fullScreen.size.height*adHieghtPercentage, fullScreen.size.width-10, fullScreen.size.height*startAdHieghtPercentage+toolbarHeight);
-        
-        
-    }else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
-    {
-        
-        adBgView .frame = CGRectMake(5, toolbarHeight+(2*gapValue)+fullScreen.size.height*adHieghtPercentage+20, fullScreen.size.width-10, fullScreen.size.height*startAdHieghtPercentage+toolbarHeight/2);
-       
-    }
-    else  if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
-    {
-        
-        adBgView .frame = CGRectMake(5, toolbarHeight+(2*gapValue)+fullScreen.size.height*adHieghtPercentage+15, fullScreen.size.width-10, fullScreen.size.height*startAdHieghtPercentage);
-        
-    }
-    
+    adBgView .frame = CGRectMake(5, toolbarHeight+(2*gapValue)+fullScreen.size.height*adHieghtPercentage, fullScreen.size.width-10, fullScreen.size.height*startAdHieghtPercentage);
     adBgView.backgroundColor = [UIColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1];
+    
     adBgView.layer.shadowColor  = [[UIColor blackColor] CGColor];
     adBgView.layer.shadowOffset  = CGSizeMake(0.0, 1.0);
     adBgView.layer.masksToBounds = NO;
     adBgView.layer.shadowOpacity = 0.7;
     adBgView.layer.shadowRadius  = 3.0;
     [self.view addSubview:adBgView];
-    float button_heights = (fullScreen.size.width-addSize)/3;
+    
+    float button_height = (fullScreen.size.width-addSize)/3;
     UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, fullScreen.size.width-10, adBgView.frame.size.height)];
     scrollView.tag = adScrollviewTag;
     scrollView.backgroundColor = [UIColor clearColor];
@@ -463,9 +413,9 @@
     float startButtonHeightPercentage= 0.25;
     float buttonWidth_Percentage = 0.2;
     int currentTag =1;
-    int gaps = ad_gap;
-    CGRect buttonFrame = CGRectMake(0, 0, button_heights, button_heights);
-    float xCenter = gaps +(buttonFrame.size.width/2);
+    int gap = ad_gap;
+    CGRect buttonFrame = CGRectMake(0, 0, button_height, button_height);
+    float xCenter = gap +(buttonFrame.size.width/2);
     float scrollViewWidth = fullScreen.size.width;
     
     if (isWithStartAd==false)
@@ -481,16 +431,16 @@
     {
         if (currentTag==tagToDivide)
         {
-            scrollViewWidth = xCenter-(button_heights/2)+10;
+            scrollViewWidth = xCenter-(button_height/2)+10;
             startButtonHeightPercentage = 0.75;
-           // buttonWidth_Percentage = 0.2;
-            xCenter = gaps +(buttonFrame.size.width/2);
+            buttonWidth_Percentage = 0.2;
+            xCenter = gap +(buttonFrame.size.width/2);
         }
         
         UIButton *but = [UIButton buttonWithType:UIButtonTypeCustom];
         but.frame   = buttonFrame;
         but.tag     = currentTag;
-        but.layer.cornerRadius = button_heights/2;//ip 60
+        but.layer.cornerRadius = button_height/2;//ip 60
         but.layer.masksToBounds = YES;
         but.layer.shadowColor = [[UIColor grayColor] CGColor];
         but.layer.shadowRadius = 2;
@@ -516,7 +466,7 @@
         
         UILabel *titleLabel = [[UILabel alloc] init];
         titleLabel.frame = CGRectMake(0, 0, buttonFrame.size.width, 20);
-        titleLabel.center = CGPointMake(but.center.x, but.center.y+(button_heights/2)+10);
+        titleLabel.center = CGPointMake(but.center.x, but.center.y+(button_height/2)+10);
         titleLabel.text = [self getTitleForButton:currentTag];
         titleLabel.textAlignment = NSTextAlignmentCenter;
         titleLabel.textColor= [UIColor grayColor];
@@ -526,21 +476,19 @@
         
         currentTag++;
         
-        xCenter = xCenter+buttonFrame.size.width+gaps;
-        //[titleLabel release];
+        xCenter = xCenter+buttonFrame.size.width+gap;
+        
         
     }
     
     scrollView.contentSize = CGSizeMake(scrollViewWidth, fullScreen.size.height*0.45);
-    [scrollView setShowsHorizontalScrollIndicator:false];
     [scrollView setContentOffset:CGPointMake(scrollViewWidth, 0) animated:NO];
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationDuration:1.0];
     [scrollView setContentOffset:CGPointMake(0, 0) animated:NO];
     [UIView commitAnimations];
     
-    //[scrollView release];
-    //[adBgView release];
+   
 }
 
 
@@ -655,7 +603,7 @@
             return;
         }
         value= value-1;
-        //return;
+        
     }
     
     switch (value)
@@ -695,39 +643,69 @@
 -(void)album
 {
     
-    
-   //[UIApplication sharedApplication].idleTimerDisabled = YES;
-    
     UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
     
-    imagePicker.delegate = self;
-    
-    imagePicker.allowsEditing = NO;
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
+    {
+        imagePicker.delegate = self;
+        imagePicker.allowsEditing = YES;
+        imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
 
-    imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-    [self presentViewController:imagePicker animated:YES completion:^{
-        
-    }];
+    }
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+    {
+        imagePicker.delegate = self;
+        imagePicker.allowsEditing = YES;
+        imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    }
+    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+    {
+        imagePicker.delegate = self;
+        imagePicker.allowsEditing = NO;
+        imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    }
+    
+    [self presentViewController:imagePicker animated:YES completion:nil];
     
 }
-
 
 -(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     
-    UIImage *chosenimage=[info valueForKey:UIImagePickerControllerOriginalImage];
+    UIImage *chosenimage;
     
-    FilterViewController *filt=[[FilterViewController alloc]init];
     
-    filt.selimg=chosenimage;
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >640)
+    {
+        
+        chosenimage=[info valueForKey:UIImagePickerControllerEditedImage];
+      
+    }
+    if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPhone && fullScreen.size.height >480)
+    {
+        chosenimage=[info valueForKey:UIImagePickerControllerEditedImage];
+    }
+    else if (UI_USER_INTERFACE_IDIOM()== UIUserInterfaceIdiomPad)
+    {
+        chosenimage=[info valueForKey:UIImagePickerControllerOriginalImage];
+    }
     
-   // UIImageWriteToSavedPhotosAlbum(chosenimage, nil, nil, nil);
+  
     
-    [self.navigationController pushViewController:filt animated:YES];
-    
-    [self dismissViewControllerAnimated:YES completion:nil];
-    
-     NSLog(@"move to secview contr");
+    if (chosenimage!=nil)
+    {
+        
+        FilterViewController *filt=[[FilterViewController alloc]init];
+       
+        filt.selimg=chosenimage;
+        
+        
+        [self dismissViewControllerAnimated:YES completion:nil];
+        [self addPreLoad];
+        [self.navigationController pushViewController:filt animated:YES];
+
+    }
+    NSLog(@"move to secview contr");
     
     
 }
@@ -736,6 +714,33 @@
 {
     
     [picker dismissViewControllerAnimated:YES completion:nil];
+    
+}
+
+- (GADInterstitial *)createAndLoadInterstitial
+{
+    GADInterstitial *interstitial =
+    [[GADInterstitial alloc] initWithAdUnitID:fullscreen_Admob_id];
+    interstitial.delegate = self;
+    [interstitial loadRequest:[GADRequest request]];
+    return interstitial;
+}
+
+
+- (void)interstitialWillPresentScreen:(GADInterstitial *)ad
+{
+    interstitial = [self createAndLoadInterstitial];
+    NSLog(@"Google add gets loadedfr");
+}
+
+-(void)addPreLoad
+{
+    NSLog(@"jjjjjjjjjjj");
+    if ([interstitial isReady])
+    {
+        
+        [interstitial presentFromRootViewController:self];
+    }
     
 }
 
@@ -759,24 +764,21 @@
         
     }
     
-    
     NSLog(@"camerapicker");
-    
-        
 }
+
 #pragma  go to next view controller
 -(void)start
 {
-    //ThirdViewController *thirdv = [[ThirdViewController alloc] init];
-    
-    // [self.navigationController pushViewController:thirdv animated:YES];
     
 }
+
 #pragma rate  application
 -(void)rateUs
 {
-    [self showWebViewWithUrl:[NSURL URLWithString:[NSString stringWithFormat:appReviewUrl,applicationId]]];
+  [self showWebViewWithUrl:[NSURL URLWithString:[NSString stringWithFormat:appReviewUrl,applicationId]]];
 }
+
 #pragma open our app store
 -(void)store
 {
@@ -786,15 +788,7 @@
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
-    
-    // Dispose of any resources that can be recreated.
 }
-
-
-
-// Now that you have added the code to load the ad, add the following
-// functions to handle loading failures and to construct the ad once
-// it has loaded:
 
 @end
 

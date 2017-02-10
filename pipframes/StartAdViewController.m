@@ -25,7 +25,7 @@ NSXMLParser *xmlParser;
 
    // NSAutoreleasePool *pool = [[NSAutoreleasePool alloc]init];
 
-    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://www.applycs.com/BadgeAd/Android/getstartad.php?id=1046439431"]];//http://www.applycs.com/BadgeAd/Android/getstartad.php?id=1046439431
+    NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://www.applycs.com/BadgeAd/Android/getstartad.php?id=1136130593"]];//http://www.applycs.com/BadgeAd/Android/getstartad.php?id=1046439431
     [req setHTTPMethod:@"GET"];
     NSHTTPURLResponse *response = nil;
     NSError *err = nil;

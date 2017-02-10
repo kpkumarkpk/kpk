@@ -45,7 +45,9 @@ static char const * const archiveCallback;
     FBNativeAd *nativeAd = [[FBNativeAd alloc] initWithPlacementID:facebookPlacementId];
     nativeAd.delegate = self;
     self.nativeAdRef = nil;
-    [FBAdSettings addTestDevice:@"b95ecebe247fd6609ed28a417c0cf10cf9b6dabf"];
+    //a187a7b7fe92ba646dbfc2c3c14490459ef79521
+    //560914488dd56b61652de14931e5f8a4a0665c1f
+    [FBAdSettings addTestDevice:@"a187a7b7fe92ba646dbfc2c3c14490459ef79521"];
     [nativeAd loadAd];
 }
 
@@ -93,13 +95,13 @@ static char const * const archiveCallback;
     nativeAdShadow.layer.shadowRadius = 1.5;
     nativeAdShadow.clipsToBounds = NO;
     [v addSubview:nativeAdShadow];
-    [nativeAdShadow release];
+   
     
     UIView *colorView = [[UIView alloc]initWithFrame:CGRectMake(0.0, nativeAdView.frame.size.height-iconSize, nativeAdView.frame.size.width, iconSize)];
     colorView.backgroundColor = [UIColor whiteColor];
     colorView.alpha = 0.7;
     [nativeAdView addSubview:colorView];
-    [colorView release];
+  
     
     UIView *textView = [[UIView alloc]initWithFrame:CGRectMake(0.0, nativeAdView.frame.size.height-iconSize, nativeAdView.frame.size.width, iconSize)];
     textView.backgroundColor = [UIColor clearColor];
@@ -110,7 +112,6 @@ static char const * const archiveCallback;
     titleLabel.textColor = [UIColor grayColor];
     titleLabel.font = [UIFont boldSystemFontOfSize:12.0];
     [textView addSubview:titleLabel];
-    [titleLabel release];
     
     UILabel *bodyLabel = [[UILabel alloc] initWithFrame:CGRectMake(iconSize+3, 15.0, nativeAdView.frame.size.width-iconSize-100, 30.0)];
     bodyLabel.text = bodyTextForAd;
@@ -119,14 +120,12 @@ static char const * const archiveCallback;
     bodyLabel.numberOfLines = 2.0;
     bodyLabel.lineBreakMode = NSLineBreakByCharWrapping;
     [textView addSubview:bodyLabel];
-    [bodyLabel release];
-    
-    
+  
     UIImageView *adIcon = [[UIImageView alloc]initWithFrame:CGRectMake(0.0, 0.0, iconSize, iconSize)];
     adIcon.image = [UIImage imageWithData: [NSData dataWithContentsOfURL:iconForAd.url]];
     //adIcon.image = [UIImage imageWithContentsOfFile:iconForAd.url.path];
     [textView addSubview:adIcon];
-    [adIcon release];
+    
 
     UIButton *adToCall = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     adToCall.frame = CGRectMake(full.size.width-90, nativeAdView.frame.size.height-iconSize, 80, iconSize);
@@ -140,7 +139,7 @@ static char const * const archiveCallback;
     
     // Add the ad to the view hirarchy
     [v addSubview:nativeAdView];
-    [nativeAdView release];
+   
     
     // Register the native ad view and its view controller with the native ad instance
     [nativeAd registerViewForInteraction:nativeAdView withViewController:self];
@@ -174,7 +173,7 @@ static char const * const archiveCallback;
     [self.navigationController setNavigationBarHidden:YES];
     UIImageView *preview   = [[UIImageView alloc]initWithFrame:CGRectMake(5.0, 5.0, full.size.width-10.0, full.size.width-10.0)];
     [self.view addSubview:preview];
-    [preview release];
+    
     
     UIView *blackShape = [[UIView alloc]initWithFrame:CGRectMake(10.0, 10.0, 35.0, 35.0)];
     blackShape.backgroundColor = [UIColor blackColor];
@@ -182,11 +181,11 @@ static char const * const archiveCallback;
     blackShape.alpha = 0.6;
     blackShape.layer.masksToBounds = YES;
     //[self.view addSubview:blackShape];
-    [blackShape release];
+    
     
     UIButton *back = [UIButton buttonWithType:UIButtonTypeCustom];
     back.frame = CGRectMake(0.0, 0.0, 30.0, 30.0);
-    [back setImage:[UIImage imageNamed:@"round_back.png"] forState:UIControlStateNormal];
+    [back setImage:[UIImage imageNamed:@"back.png"] forState:UIControlStateNormal];
     [back addTarget:self action:@selector(backbuttonPressed:) forControlEvents:UIControlEventTouchUpInside];
    // [self.view addSubview:back];
     
@@ -201,7 +200,7 @@ static char const * const archiveCallback;
                                                                            action:@selector(backbuttonPressed:)];
     UIImageView *preview   = [[UIImageView alloc]initWithFrame:CGRectMake(12.5, 44.0, full.size.width-25.0, full.size.width-25.0)];
     [self.view addSubview:preview];
-    [preview release];
+   
 #endif
     
      return;
