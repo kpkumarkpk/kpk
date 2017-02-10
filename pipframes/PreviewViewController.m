@@ -50,6 +50,8 @@
 -(void)viewWillAppear:(BOOL)animated
 
 {
+    NSLog(@"checking git");
+    
     NSLog(@"viewWillAppear");
     buttonFlashing=NO;
     button.alpha = 1.0f;
