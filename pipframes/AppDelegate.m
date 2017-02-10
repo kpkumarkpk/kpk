@@ -7,6 +7,10 @@
 //
 
 #import "AppDelegate.h"
+#import "DEMONavigationController.h"
+#import "DEMOMenuViewController.h"
+#import "ViewController.h"
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
 
 @interface AppDelegate ()
 
@@ -14,11 +18,80 @@
 
 @implementation AppDelegate
 
+@synthesize window= _window;
+
+@synthesize viewController = _viewController;
+
+//@synthesize navbar;
+
+
+
+- (BOOL)schemeAvailable:(NSString *)scheme {
+    UIApplication *application = [UIApplication sharedApplication];
+    NSURL *URL = [NSURL URLWithString:scheme];
+    return [application canOpenURL:URL];
+}
+
+
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    
+    
+   
+
+    
+    [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
     // Override point for customization after application launch.
+    
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    
+    self.viewController = [[ViewController alloc] init];
+    
+    self.viewController.isSelectionOptionEnable = true;
+    
+    
+    DEMOMenuViewController *menuController = [[DEMOMenuViewController alloc] initWithStyle:UITableViewStylePlain];
+    
+    DEMONavigationController *navigationController = [[DEMONavigationController alloc] initWithRootViewController:[[ViewController alloc] init]];
+    
+    REFrostedViewController *frostedViewController = [[REFrostedViewController alloc] initWithContentViewController:navigationController menuViewController:menuController];
+    frostedViewController.direction = REFrostedViewControllerDirectionLeft;
+    frostedViewController.liveBlurBackgroundStyle = REFrostedViewControllerLiveBackgroundStyleLight;
+    frostedViewController.liveBlur = NO;
+    frostedViewController.delegate = self;
+    frostedViewController.blurRadius = 5;
+    frostedViewController.blurTintColor = [UIColor colorWithWhite:0.7 alpha:0.8];
+    frostedViewController.backgroundFadeAmount = 0.3;
+    
+    self.window.rootViewController = frostedViewController;
+    
+    self.window.backgroundColor = [UIColor clearColor];
+    
+    [application setStatusBarHidden:YES];
+    
+    [self.window makeKeyAndVisible];
+    
+    //navbar.topItem.title=@"Pip Frames";
     return YES;
 }
+
+- (BOOL)application:(UIApplication *)application  openURL:(NSURL *)url  sourceApplication:(NSString *)sourceApplication
+         annotation:(id)annotation
+{
+    return [[FBSDKApplicationDelegate sharedInstance] application:application                                                          openURL:url  sourceApplication:sourceApplication annotation:annotation];
+}
+
+- (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    CGRect bounds = [[UIScreen mainScreen] bounds];
+    [self.window setFrame:bounds];
+    [self.window setBounds:bounds];
+    
+    return YES;
+}
+
+
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
@@ -35,6 +108,7 @@
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
+    [FBSDKAppEvents activateApp];
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 }
 
